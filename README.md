@@ -13,3 +13,6 @@ instructions) plus optional `scripts/`, `references/`, `assets/` subdirectories.
 
 - `ipfs-funding-report/` — PFC disbursement statement parsing for IPFS/Plus's "Funding Report"
   format. Used by gottlieb-suite's PFC statement ingestion agent.
+- `ledger-reconciliation-matching/` — Criteria for matching a confirmed disbursement statement line
+  item against an open receivable LedgerEntry before creating reconciliation links. Used by
+  gottlieb-suite's realm ledger statement ingestion agent.
