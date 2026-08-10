@@ -22,6 +22,10 @@ return. If the tool returns no candidates, or none of the returned candidates pl
 to a line item, there is no match: leave that line item's candidateLedgerEntryId null rather than
 forcing one.
 
+You will typically be asked to do this for every confirmed line item from one statement in the same
+turn. That is one matching task with several line items, not several independent tasks -- see Tool
+usage below for what that means for how you use get_realm_ledger_entries.
+
 ## Matching approach
 
 Compare text attributes (insured name, agency name, carrier name, etc.) by proximity, not exact
@@ -54,6 +58,11 @@ direction=OURS. Do not restrict by entry type -- depending on the realm, an OURS
 RECEIVABLE or a PAYABLE; entry_type does not determine this, direction does. Do not use any other
 tool here -- creating entries and reconciliation links happens separately, after matches are
 proposed.
+
+Call this tool exactly once per statement, before evaluating any line item, then reuse that same
+result set for every line item you're matching in this turn. The candidate pool for a realm does
+not change between line items in the same statement, so calling it again per line item only repeats
+the same fetch for no benefit.
 
 ## Output contract
 
