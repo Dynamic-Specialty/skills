@@ -9,15 +9,19 @@ Each skill is a directory with a `SKILL.md` file (YAML frontmatter + Markdown in
 optional `scripts/`, `references/`, `assets/` subdirectories. The frontmatter's `name` must match
 the directory name.
 
-Skills are grouped into top-level folders by purpose, not left flat at the repo root -- a caller
-that loads "every skill under a path" (gottlieb-suite's statement extraction step does this, since
-it doesn't know in advance which vendor format applies) should only ever see skills relevant to
-its own concern, not unrelated ones that happen to live in the same repo.
+Skills are classified two levels deep: **subject area** first (the business domain the skill
+belongs to, e.g. `ledger-document`), then **purpose** (what kind of task within that domain, e.g.
+`extraction` or `matching`). Named by domain and purpose, not by whichever agent/class currently
+calls them — a caller that loads "every skill under a path" should only ever see skills relevant to
+its own concern, and the classification should hold even if the calling code is later renamed or a
+second caller in the same domain shows up.
 
 ## Skills
 
-- `extraction/ipfs-funding-report/` — PFC disbursement statement parsing for IPFS/Plus's "Funding
-  Report" format. Used by gottlieb-suite's statement extraction step.
-- `ledger-reconciliation-matching/` — Criteria for matching a confirmed disbursement statement line
-  item against an open receivable LedgerEntry before creating reconciliation links. Loaded by exact
-  path (not folder-scanned), so it isn't grouped under a purpose folder.
+- `ledger-document/extraction/ipfs-funding-report/` — PFC disbursement statement parsing for
+  IPFS/Plus's "Funding Report" format.
+- `ledger-document/matching/ledger-reconciliation-matching/` — Criteria for matching a confirmed
+  disbursement statement line item against an open receivable LedgerEntry before creating
+  reconciliation links.
+
+Both are currently used by gottlieb-suite's realm ledger statement ingestion agent.
