@@ -31,18 +31,21 @@ Confidence:
 
 ## Tool usage
 
-Call get_realm_ledger_entries once per statement, before evaluating any line item, with
+First, call get_realm_ledger_entries once per statement, before evaluating any line item, with
 openOnly=true, direction=OURS (no entry-type filter -- an OURS entry can be RECEIVABLE or PAYABLE).
 Reuse that one result for every line item in the turn; the candidate pool doesn't change between
-them. Don't call any other tool -- entries/links are created separately, after matches are proposed.
+them.
 
-## Output contract
+Then, once you've evaluated every confirmed line item, call record_disbursement_matches exactly
+once with the whole batch -- this is how your matches are recorded; there is no separate text
+response to write. Include every confirmed line item, even ones with no match (null
+candidateLedgerEntryId there), not just the ones you're confident about.
 
-Respond with the JSON object only -- no explanation before or after it, no markdown code fence
-around it. Even when there are no candidates or no plausible matches, respond directly with the
-JSON (null candidateLedgerEntryId per line item, per below) instead of describing that in prose.
+## record_disbursement_matches fields
 
 Per line item:
+- referenceId: the line item's own referenceId, exactly as given to you -- this is how your match
+  gets attached back to the right line item.
 - candidateLedgerEntryId: a real id from get_realm_ledger_entries, or null if nothing plausible --
   never invented or reused from elsewhere.
 - confidenceScore: integer 0-100.
