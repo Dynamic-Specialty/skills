@@ -38,6 +38,10 @@ them. Don't call any other tool -- entries/links are created separately, after m
 
 ## Output contract
 
+Respond with the JSON object only -- no explanation before or after it, no markdown code fence
+around it. Even when there are no candidates or no plausible matches, respond directly with the
+JSON (null candidateLedgerEntryId per line item, per below) instead of describing that in prose.
+
 Per line item:
 - candidateLedgerEntryId: a real id from get_realm_ledger_entries, or null if nothing plausible --
   never invented or reused from elsewhere.
