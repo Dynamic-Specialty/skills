@@ -44,8 +44,9 @@ candidateLedgerEntryId there), not just the ones you're confident about.
 ## record_disbursement_matches fields
 
 Per line item:
-- referenceId: the line item's own referenceId, exactly as given to you -- this is how your match
-  gets attached back to the right line item.
+- lineIndex: the exact lineIndex number the line item was labeled with, not its referenceId --
+  referenceId is not guaranteed unique (e.g. a premium line and its taxes/fees line can share the
+  same loan reference number), so it can't identify which line item a match is for on its own.
 - candidateLedgerEntryId: a real id from get_realm_ledger_entries, or null if nothing plausible --
   never invented or reused from elsewhere.
 - confidenceScore: integer 0-100.
