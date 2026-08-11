@@ -59,7 +59,11 @@ Per line item:
   referenceId is not guaranteed unique (e.g. a premium line and its taxes/fees line can share the
   same loan reference number), so it can't identify which line item a match is for on its own.
 - candidateLedgerEntryId: a real id from get_realm_ledger_entries, or null if nothing plausible --
-  never invented or reused from elsewhere.
+  never invented or reused from elsewhere. Also never reused across two different line items in
+  this same batch -- each open candidate can back at most one line item's match, so if two lines
+  both plausibly fit the same candidate, only the stronger match should claim it; give the other
+  a null candidateLedgerEntryId (or a different, real candidate if one fits) rather than proposing
+  the same one twice.
 - confidenceScore: integer 0-100.
 - matchReason: brief explanation of the match, or why none was found.
 
