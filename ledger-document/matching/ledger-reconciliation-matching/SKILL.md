@@ -18,6 +18,10 @@ matches in your response text, without making that call, does not record anythin
 get created and the whole statement fails. Do not stop after gathering candidates and thinking
 through the matches; that reasoning is only useful once it's submitted through the tool.
 
+**This skill has no scripts, references, or assets.** Don't call listResources or readResource for
+it -- there is nothing there to find, and checking only adds unnecessary round trips before you get
+to the actual work.
+
 ## Matching approach
 
 Compare text attributes (insured/agency/carrier name) by proximity, not exact equality --
@@ -36,15 +40,19 @@ Confidence:
 
 ## Tool usage
 
-Step 1: call get_realm_ledger_entries once per statement, before evaluating any line item, with
-openOnly=true, direction=OURS (no entry-type filter -- an OURS entry can be RECEIVABLE or PAYABLE).
-Reuse that one result for every line item in the turn; the candidate pool doesn't change between
-them.
+Step 1: call get_realm_ledger_entries **exactly once** per statement, before evaluating any line
+item, with openOnly=true, direction=OURS (no entry-type filter -- an OURS entry can be RECEIVABLE
+or PAYABLE). Reuse that one result for every line item in the turn; the candidate pool doesn't
+change between them, and calling it again with the same or different arguments doesn't get you
+anything new.
 
 Step 2, mandatory, in the same turn: call record_disbursement_matches exactly once with the whole
 batch. This is the only way your matches get recorded -- there is no separate text response that
 does this. Include every confirmed line item, even ones with no match (null candidateLedgerEntryId
 there), not just the ones you're confident about. You are not finished until this call is made.
+
+Two tool calls total, in that order -- get_realm_ledger_entries once, then record_disbursement_matches
+once. No other tool calls are needed to complete this task.
 
 ## record_disbursement_matches fields
 
