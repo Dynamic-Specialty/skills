@@ -1,12 +1,16 @@
 ---
 name: ledger-reconciliation-matching
 description: >
-  Use when proposing a match between an extracted statement line item and an existing, open,
-  unmatched OURS LedgerEntry on the same realm -- before entries are committed and reconciliation
-  links are created.
+  Use when proposing a match between an extracted statement line item and an existing, open OURS
+  LedgerEntry on the same realm -- before entries are committed and reconciliation links are
+  created.
 ---
 
-Match each confirmed line item against a real, open, unmatched OURS LedgerEntry for the same realm.
+Match each confirmed line item against a real, open OURS LedgerEntry for the same realm. An OURS
+entry already having one or more matches against it doesn't rule it out -- premium finance
+companies routinely split a payment across statements (e.g. $200 today, $800 later) or send
+duplicate/overlapping payments for the same event. Matching the same OURS entry more than once is
+normal, not an error -- see get_realm_ledger_entries below for how to factor that in.
 Submitters vary in what detail they provide (Carrier vs. PFC), so use whatever's available --
 insured name and amount are the primary signal; invoice date/number, policy effective date, policy
 number, and agency name are secondary.
@@ -39,10 +43,15 @@ Confidence:
 ## Tool usage
 
 Step 1: call get_realm_ledger_entries **exactly once** per statement, before evaluating any line
-item -- it takes no arguments and already returns only genuinely available candidates for this
-statement's realm (open, OURS, not already claimed by another pending or confirmed match). Reuse
-that one result for every line item in the turn; the candidate pool doesn't change between them,
-and calling it again doesn't get you anything new.
+item -- it takes no arguments and returns every open OURS candidate for this statement's realm.
+Reuse that one result for every line item in the turn; the candidate pool doesn't change between
+them, and calling it again doesn't get you anything new.
+
+Each candidate includes alreadyMatchedAmount -- how much has already been confirmed-matched
+against it. This doesn't rule a candidate out (see above), but use it as context: if a candidate's
+own amount is $1000 and alreadyMatchedAmount is $800, a new $200 line completing it is a strong
+signal; a new $900 line against that same candidate is worth a note in matchReason (looks like a
+duplicate or overpayment), not a reason to withhold the match.
 
 Step 2, mandatory, in the same turn: call record_disbursement_matches exactly once with the whole
 batch. This is the only way your matches get recorded -- there is no separate text response that
@@ -59,11 +68,9 @@ Per line item:
   referenceId is not guaranteed unique (e.g. a premium line and its taxes/fees line can share the
   same loan reference number), so it can't identify which line item a match is for on its own.
 - candidateLedgerEntryId: a real id from get_realm_ledger_entries, or null if nothing plausible --
-  never invented or reused from elsewhere. Also never reused across two different line items in
-  this same batch -- each open candidate can back at most one line item's match, so if two lines
-  both plausibly fit the same candidate, only the stronger match should claim it; give the other
-  a null candidateLedgerEntryId (or a different, real candidate if one fits) rather than proposing
-  the same one twice.
+  never invented. Reusing the same candidate for more than one line item (in this batch or
+  matching what's already been matched before, per alreadyMatchedAmount) is fine when the evidence
+  supports it -- don't avoid it just because it's already been used.
 - confidenceScore: integer 0-100.
 - matchReason: brief explanation of the match, or why none was found.
 
