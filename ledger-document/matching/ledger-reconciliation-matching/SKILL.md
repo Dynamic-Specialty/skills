@@ -88,6 +88,9 @@ Per line item:
   never invented. Reusing the same candidate across multiple line items is fine when the evidence
   supports it.
 - confidenceScore: integer 0-100.
-- matchReason: brief explanation of the match, or why none was found.
+- matchReason: one short sentence, citing only the signal(s) that actually drove the decision
+  (e.g. "date within 2 days, amount matches remaining balance" or "no candidate within a
+  plausible date range") -- not a recap of every signal you checked, and not your reasoning
+  process.
 
 matchStatus is always SUGGESTED, set automatically -- don't set it yourself.
