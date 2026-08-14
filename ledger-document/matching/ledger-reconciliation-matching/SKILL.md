@@ -51,13 +51,18 @@ No confirming signal at all means don't propose the match, regardless of how wel
 
 Confidence:
 - Baseline + exactly one weak confirming signal (a loose-but-not-tight date, or a small fraction
-  of remaining balance) belongs in the lower half of the range -- don't round this up.
-- Baseline + a close date + a plausible (full or partial) amount supports moderate-to-high
-  confidence.
-- An exact identifier match (policy or invoice number literally shared) is the strongest signal --
-  it can carry high confidence on its own even if amount or date is imperfect.
+  of remaining balance) belongs in the lower half of the range -- don't round this up. A close
+  effective-start-date with nothing else confirming belongs here too: on its own it's a real
+  signal, not a strong one.
+- Baseline + a close effective-start-date + a plausible (full or partial) amount is a strong
+  combination -- weight it toward the higher end of the range, close to an identifier match but
+  not equal to it. The date's weight comes from confirming alongside another signal, not from
+  standing alone.
+- An exact identifier match (policy or invoice number literally shared) is still the single
+  strongest signal on its own -- it can carry high confidence even if amount or date is
+  imperfect, and outweighs a date+amount combination when they'd otherwise conflict.
 - Reserve top confidence for a real identifier match, or a full/near-full amount match alongside a
-  close date -- not just because every ordinary attribute happens to align.
+  close effective-start-date -- not just because every ordinary attribute happens to align.
 
 ## Tool usage
 
