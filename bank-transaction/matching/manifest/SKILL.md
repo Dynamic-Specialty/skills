@@ -31,9 +31,14 @@ Primary signal: transaction amount against the manifest's `declaredTotal`.
   unrelated deposits of similar size) -- propose a ranked list, best first, when genuinely
   ambiguous, rather than only the single best guess.
 
-Secondary, corroborating signal: `date` proximity to the manifest's own document/upload date, and
-whether `description` contains anything recognizable (a PFC name, reference number) -- neither is
-enough on its own to propose a candidate with no amount evidence behind it.
+Corroborating signal: each candidate's `date` against the manifest's own `manifest date` (given to
+you above) -- the statement/batch's own transaction date (when the PFC actually remitted, or the
+date the batch covers), not when either record was created in this system. Close proximity (same
+day or within a few days) strengthens an amount match; a wide gap is a mild negative signal, not
+disqualifying on its own -- a PFC's own posting delay is normal. A missing manifest date is no
+signal either way, not a negative one. Whether `description` contains anything recognizable (a PFC
+name, reference number) is a further, weaker signal -- neither this nor date proximity is enough on
+its own to propose a candidate with no amount evidence behind it.
 
 A transaction whose amount has no plausible relationship to the declared total (alone or combined
 with another candidate) is not a match -- leave it out rather than proposing the closest-but-wrong

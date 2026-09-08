@@ -52,26 +52,37 @@ propose -- leave `entryMatches` empty rather than guessing off name alone.
 ## Manifest matching approach
 
 Candidates come from `get_realm_manifests_for_realm` -- every open Statement/Batch on the realm
-not already fully tallied, each with `declaredTotal` and `allLinesConfirmed` (whether every
-receivable under that manifest already has a confirmed statement-line match).
+not already fully tallied, each with `declaredTotal`, `allLinesConfirmed` (whether every
+receivable under that manifest already has a confirmed statement-line match), and `manifestDate`.
 
-- An exact (or essentially exact) match between the transaction amount and a manifest's
-  `declaredTotal`, with `allLinesConfirmed` true, is a clean, high-confidence candidate -- the
-  manifest is fully accounted for internally and this transaction is very likely its remittance.
+Primary signal: transaction amount against the manifest's `declaredTotal`.
+- An exact (or essentially exact) match, with `allLinesConfirmed` true, is a clean, high-confidence
+  candidate -- the manifest is fully accounted for internally and this transaction is very likely
+  its remittance.
 - An exact amount match with `allLinesConfirmed` false is still worth proposing, but at lower
   confidence -- the total lines up, but not every line under it has a home yet, so linking it
   won't fully settle immediately.
-- More than one manifest can plausibly fit (e.g. two same-day statements with similar totals) --
-  propose a ranked list, best first, rather than only the single best guess.
 - A transaction amount with no manifest total anywhere close is not a manifest match -- leave
   `manifestMatches` empty rather than proposing the closest-but-still-wrong one.
+
+Corroborating signal: the transaction's own `date` against the manifest's `manifestDate` --
+`manifestDate` is the statement/batch's own transaction date (when the PFC actually remitted or
+the batch actually covers), not when either record was created in this system. Close proximity
+(same day or within a few days) strengthens an amount match; a wide gap is a mild negative
+signal, not disqualifying on its own -- a PFC's own posting delay is normal. `manifestDate` can be
+absent (older records, or a Batch predating that field) -- treat that as no signal either way, not
+as a negative one.
+
+- More than one manifest can plausibly fit on amount alone (e.g. two same-day statements with
+  similar totals) -- use `manifestDate` proximity to break the tie where you can, and propose a
+  ranked list, best first, rather than only the single best guess when genuinely ambiguous.
 
 ## Confidence calibration
 
 - **High (80-100):** exact amount match (single candidate or a combined split) plus a real name
-  alignment, or an exact manifest-total match with `allLinesConfirmed` true.
+  alignment, or an exact manifest-total match with `allLinesConfirmed` true and a close date.
 - **Medium (50-79):** amount matches but name evidence is weak/absent, or a manifest total matches
-  exactly but `allLinesConfirmed` is false.
+  exactly but `allLinesConfirmed` is false, or the date is far off with nothing else to explain it.
 - **Low (0-49):** a plausible but inexact amount fit with some corroborating evidence. If you can't
   clear even this bar, don't propose the candidate -- leave it out rather than including a
   low-confidence guess.
