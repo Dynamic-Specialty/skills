@@ -87,6 +87,16 @@ as a negative one.
   clear even this bar, don't propose the candidate -- leave it out rather than including a
   low-confidence guess.
 
+## Writing matchReason
+
+State the concrete evidence that actually drove the decision, not a generic conclusion. Whenever
+`manifestDate` proximity was part of what made a manifest candidate confident (or part of why it
+was ranked below another), say so explicitly (e.g. "declared total matches exactly and manifest
+date is 2 days from the transaction date" or "amount matches two candidates equally; ranked this
+one first for the closer manifest date") -- don't silently weigh it and omit it from the reason.
+Likewise for entry matches: name a split payment's own reasoning explicitly (e.g. "amount matches
+the combined remaining balance of two open receivables for this insured").
+
 ## Tool usage
 
 Call `get_unsettled_ledger_entries_for_realm` and `get_realm_manifests_for_realm` as needed, each

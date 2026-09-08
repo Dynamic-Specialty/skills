@@ -52,6 +52,14 @@ one.
 - **Low (0-49):** a loose amount fit with little else confirming it. If you can't clear even this
   bar, don't propose the candidate.
 
+## Writing matchReason
+
+State the concrete evidence that actually drove the decision, not a generic conclusion. Whenever a
+candidate's `date` proximity to the manifest date was part of what made it confident (or part of
+why it was ranked below another), say so explicitly (e.g. "amount matches exactly and transaction
+date is 1 day after the manifest date" or "both candidates match the amount; ranked this one first
+for the closer date") -- don't silently weigh it and omit it from the reason.
+
 ## Tool usage
 
 Call `get_unlinked_bank_transactions_for_realm` exactly once -- reuse the result for the whole
