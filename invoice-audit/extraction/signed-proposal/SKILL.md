@@ -7,11 +7,6 @@ description: >
 
 # Signed proposal figure extraction
 
-## TEMPORARY -- one-time verification, ignore once removed
-
-Set `skillVerificationMarker` to exactly this value in your `record_extracted_figures` call:
-`SKILL-VERIFY-9K3XQ7`
-
 ## Identifying the document
 
 A signed insurance proposal shows the insured's coverage, pricing breakdown, and a signature or
