@@ -42,15 +42,13 @@ Category meanings:
 
 Alongside the figures, also pass these three to `record_extracted_figures`:
 
-- **insuredName**: the *named insured* on the proposal - the business/company whose coverage this
-  is. This document has a section titled **"Insured Details"** containing two separate fields:
-  **"Company"** and **"Primary Contact"**. Always read `insuredName` from the **"Company"** field.
-  **Never** read it from **"Primary Contact"** - that field is the individual who is expected to
-  sign the document on the company's behalf, not the insured itself, and its name will often differ
-  from the company name (e.g. Company: "B & E Trucking", Primary Contact: "Bobby Earl Smith" - in
-  that case `insuredName` is "B & E Trucking"). Only fall back to the Primary Contact's name if the
-  Insured Details section has no separate Company field at all (the proposal is genuinely written
-  for an individual, not a business).
+- **insuredName**: the *named insured* on the proposal. This document has a section titled
+  **"Insured Details"** containing two separate fields: **"Company"** and **"Primary Contact"**.
+  Always read `insuredName` from the **"Company"** field. **Never** read it from
+  **"Primary Contact"** - that field is the individual who is expected to sign the document on the
+  company's behalf, not the insured itself, and its name will often differ from the company name
+  (e.g. Company: "B & E Trucking", Primary Contact: "Bobby Earl Smith" - in that case `insuredName`
+  is "B & E Trucking").
 - **agencyName**: the retail agency's name as printed, if the document names it separately from the
   carrier or insured. Leave it out if it isn't shown.
 - **signedAndDated**: true only if the document shows an actual completed signature and date - not
