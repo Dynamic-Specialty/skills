@@ -43,14 +43,14 @@ Category meanings:
 Alongside the figures, also pass these three to `record_extracted_figures`:
 
 - **insuredName**: the *named insured* on the proposal - the business/company whose coverage this
-  is. Look for a field or heading like "Named Insured", "Insured", or similar, normally near the top
-  of the document. **This is not necessarily the same name as whoever physically signed it.** A
-  signature block commonly shows an individual's personal name (e.g. "Bobby Earl Smith") signing on
-  behalf of a company (e.g. "B & E Trucking") - when the printed company/business name and the
-  signer's personal name differ, always extract the company/business name as `insuredName`, never
-  the signer's personal name. Only use a person's own name as `insuredName` when the proposal is
-  genuinely written for an individual and no separate company name appears anywhere on the
-  document.
+  is. This document has a section titled **"Insured Details"** containing two separate fields:
+  **"Company"** and **"Primary Contact"**. Always read `insuredName` from the **"Company"** field.
+  **Never** read it from **"Primary Contact"** - that field is the individual who is expected to
+  sign the document on the company's behalf, not the insured itself, and its name will often differ
+  from the company name (e.g. Company: "B & E Trucking", Primary Contact: "Bobby Earl Smith" - in
+  that case `insuredName` is "B & E Trucking"). Only fall back to the Primary Contact's name if the
+  Insured Details section has no separate Company field at all (the proposal is genuinely written
+  for an individual, not a business).
 - **agencyName**: the retail agency's name as printed, if the document names it separately from the
   carrier or insured. Leave it out if it isn't shown.
 - **signedAndDated**: true only if the document shows an actual completed signature and date - not
@@ -76,9 +76,8 @@ represents the overall amount, and tag that one `Total`.
 
 ## What NOT to do
 
-- Do not use the signer's personal name as `insuredName` when a separate company/business name is
-  printed anywhere on the document - the named insured is the company being covered, not whoever
-  signed on its behalf.
+- Do not read `insuredName` from the "Primary Contact" field in Insured Details - that is the
+  signer, not the insured. Read it from the "Company" field.
 - Do not compare these figures against any invoice or any other document. You are not told what
   the invoice says, and you have no basis to judge a match.
 - Do not apply any notion of tolerance, rounding, or "close enough."
