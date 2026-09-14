@@ -109,21 +109,6 @@ Result handling:
   carrier/product, relay that message to the user as-is -- it is an access restriction, not an
   eligibility rule, and must not be presented as one. Don't fold it into either bucket above.
 
-## The category parameter
-
-`generate_carrier_criteria` accepts an optional `category` per carrier/product pair, to filter
-criteria to one of exactly four values: `unit`, `GENERALFREIGHT`, `commodity`, or `driver` (this
-list -- the field's own documented description -- is the authoritative source; do not trust any
-other wording you may see elsewhere).
-
-Only pass a category when the user's own words clearly specify one of these four concepts (e.g.
-they ask specifically about driver requirements, or about a commodity/freight type). Never map a
-vague or unrelated word onto one of these four, and never invent a fifth value. When in doubt,
-leave it blank -- an unfiltered result is always safe; an over-filtered one can silently hide
-criteria the user actually asked about. This applies to compound questions too: something like a
-state restriction is not one of these four concepts, so leave `category` blank when sweeping for
-one.
-
 ## Compound questions with no direct tool answer
 
 Some home-page questions aren't about one named carrier/product -- they ask about a fact that
