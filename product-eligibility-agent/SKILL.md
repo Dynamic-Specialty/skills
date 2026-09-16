@@ -43,10 +43,10 @@ Match the question's shape to a starting point before doing anything else:
   "what carriers do we have" question -- `list_available_carriers`.
 - The user names a product/coverage in plain language, or asks what an abbreviation stands for --
   `list_product_abbreviations`.
-- You need the master list of which carrier/product combinations actually have eligibility
-  criteria -- to confirm exact spelling, to check a combination exists before calling
+- You need the master list of which carrier/product combinations the user have access to --
+  to confirm exact spelling, to check a combination exists before calling
   `generate_carrier_criteria`, or to enumerate every pair for a compound question --
-  `list_carrier_eligibility_options`.
+  `list_carrier_products_available_options`.
 - The user asks what one or more *named* carriers require for one or more *named* products --
   resolve names first if needed, then `generate_carrier_criteria`.
 - The user asks a cross-cutting question that isn't tied to a carrier/product they named (a
@@ -85,21 +85,21 @@ call -- batch every pair the question needs into one call rather than calling it
 including a large batch built for a compound sweep (see below). It requires the exact carrier
 abbreviated name and exact product/coverage code for each pair; never guess or invent either one.
 If you are not certain of the exact carrier or product the user means, resolve it first (via
-`list_available_carriers` / `list_product_abbreviations`, or via `list_carrier_eligibility_options`
+`list_available_carriers` / `list_product_abbreviations`, or via `list_carrier_products_available_options`
 below) rather than guessing.
 
-`list_carrier_eligibility_options` lists the exact carrier abbreviated names and product/coverage
+`list_carrier_products_available_options` lists the exact carrier abbreviated names and product/coverage
 codes that `generate_carrier_criteria` actually has eligibility rules for, grouped by carrier. Call
-it whenever you're not certain a given carrier/product combination has eligibility criteria at all,
-to confirm the exact spelling `generate_carrier_criteria` expects, or to enumerate every pair in
-scope for a compound question (below).
+it whenever you're not certain a given carrier/product combination its accessible by the user and 
+has eligibility criteria at all, to confirm the exact spelling `generate_carrier_criteria` expects,
+or to enumerate every pair in scope for a compound question (below).
 
 Result handling:
-- If a pair was **typed or assumed** rather than confirmed against `list_carrier_eligibility_options`
+- If a pair was **typed or assumed** rather than confirmed against `list_carrier_products_available_options`
   first, an empty result for it means that combination wasn't recognized (wrong spelling, or it
   genuinely doesn't exist) -- confirm or clarify with the user rather than stating there is
   nothing to report.
-- If a pair **came from** `list_carrier_eligibility_options` (so it's already confirmed to exist
+- If a pair **came from** `list_carrier_products_available_options` (so it's already confirmed to exist
   and be accessible) and still comes back with no criteria, that's a different, more ambiguous
   case -- it can mean that carrier simply enforces no eligibility rules for that product, not that
   anything is wrong. Don't silently resolve that ambiguity either way; state plainly that no
@@ -121,7 +121,7 @@ results yourself.
 
 Work it in three steps:
 
-1. **Enumerate the pairs in scope.** Call `list_carrier_eligibility_options` -- it already returns
+1. **Enumerate the pairs in scope.** Call `list_carrier_products_available_options` -- it already returns
    exactly the carrier/product combinations that have eligibility criteria to check *and* that the
    current user can access, grouped by carrier. Prefer it over cross-joining
    `list_available_carriers` with `list_product_abbreviations` yourself: those two lists aren't
@@ -129,7 +129,7 @@ Work it in three steps:
    combinations that don't exist or aren't visible to this user. If the question names a product
    but no carrier (or vice versa), narrow to that product's (or carrier's) pairs rather than
    sweeping the full matrix. Only fall back to the other two lookup tools if the question scopes
-   things in a way `list_carrier_eligibility_options` can't express (e.g. "carriers we've added
+   things in a way `list_carrier_products_available_options` can't express (e.g. "carriers we've added
    this year" -- not something any of these tools know; say so rather than guessing).
 2. **Fetch criteria for every pair in one batched call.** Pass every pair from step 1 to a single
    `generate_carrier_criteria` call. Don't sample a subset to save a call, and don't narrow scope
@@ -147,7 +147,7 @@ Work it in three steps:
 
 ## Tool usage
 
-Call `list_available_carriers`, `list_product_abbreviations`, and `list_carrier_eligibility_options`
+Call `list_available_carriers`, `list_product_abbreviations`, and `list_carrier_products_available_options`
 at most once each per turn -- reuse each result for the rest of the turn rather than calling again.
 Call `generate_carrier_criteria` once per turn, batched with every carrier/product pair the
 question needs (not once per pair) -- for a compound question this batch is every pair from step 1
