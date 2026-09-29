@@ -8,6 +8,8 @@ description: >
   or a question about how a carrier sets up a product: its limit or deductible options,
   disclaimers, whether it can be endorsed (and whether endorsements are pro-rated), which
   endorsements change the premium, whether claims are accepted, or its minimum earned premium.
+  Also use when the user asks for the glossary ("do you have a glossary?") or what an insurance
+  or trucking term means (appetite, MEP, paper, hotshot, power only, and similar).
 ---
 
 # Carrier, product, eligibility, and product setup lookup
@@ -21,6 +23,9 @@ Never inferred from what a carrier or product "probably" is.
 
 This covers every carrier and product your answer names, not only the one the user asked about.
 If something is still missing or unclear after calling the tools, ask the user a direct question.
+
+The one exception is term definitions. Those come from the "Glossary" section of this skill, and
+only from there.
 
 This skill has no scripts, references, or assets.
 
@@ -61,7 +66,7 @@ Call rules:
 
 ## Pick the path the question needs
 
-Use only the steps the question actually needs. There are four shapes.
+Use only the steps the question actually needs. There are five shapes.
 
 1. **Name lookup only.** The user asks what an abbreviation means, or which carriers they can use.
    - Carrier by name, or "which carriers do we have": `list_available_carriers`.
@@ -75,9 +80,12 @@ Use only the steps the question actually needs. There are four shapes.
 4. **Product setup question.** The user asks what limits or deductibles are offered, what the
    disclaimers are, whether a policy can be endorsed, whether claims are accepted, or what the
    minimum earned premium is. Follow "Product setup questions" below.
+5. **Glossary question.** The user asks for the glossary ("do you have a glossary?", "what terms
+   do you know?") or what a term means ("what's MEP?", "what does paper mean?"). No tool call
+   needed. Follow "Answering glossary questions" below.
 
 A question can need more than one path. "What limits does X offer, and do they write in Texas?"
-needs both path 4 and path 2.
+needs both path 4 and path 2. "What's MEP, and what is it for X?" needs both path 5 and path 4.
 
 ## Reading criteria results
 
@@ -157,8 +165,30 @@ When `get_product_configurations` returns nothing:
 
 ## Glossary
 
-Agencies use their own terms. Understand them in questions, and use them in your answers instead
-of internal terms.
+Agencies use their own terms. The glossary has two jobs:
+
+- **Behind the scenes.** Understand these terms in questions, and use them in your answers
+  instead of internal terms. The "Internal term" column tells you which tool, field, or path the
+  term maps to.
+- **As a feature.** When the user asks for the glossary or for what a term means, return it to
+  them. See "Answering glossary questions" below.
+
+### Answering glossary questions
+
+- **The whole glossary** ("do you have a glossary?", "what terms do you know?"): return every
+  term, grouped under two headings, **Insurance terms** and **Trucking terms**. Show only the
+  term and its meaning. Keep the trucking note that "carrier" there means the trucking company.
+- **One section** ("what trucking terms do you know?"): return only that group.
+- **One or a few terms** ("what's MEP?"): give each term's meaning in a sentence. If the term maps
+  to something you can look up, offer it in one line, e.g. "Want me to check the minimum earned
+  premium for a carrier?"
+- **A term that isn't listed**: say it isn't in the glossary, and ask what they mean by it. Don't
+  define it from memory.
+
+Never show the "Internal term" column, a field name, or a path number to the user. Those are for
+you only.
+
+### Insurance terms
 
 | Agency term | Meaning | Internal term |
 |---|---|---|
