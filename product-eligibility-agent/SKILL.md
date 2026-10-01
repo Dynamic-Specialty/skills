@@ -3,7 +3,8 @@ name: home-page-carrier-product-eligibility-lookup
 description: >
   Use when answering a free-text home-page question that needs a carrier or product name
   resolved to its exact code, a carrier's eligibility criteria for a product looked up, a
-  cross-cutting eligibility question (a state, exclusion, or limit that might apply "for any
+  question about which carriers exclude or write in a state (for every carrier or one named
+  carrier), a cross-cutting eligibility question (an exclusion or limit that might apply "for any
   carrier") answered by checking across multiple carriers/products rather than one named pair,
   or a question about how a carrier sets up a product: its limit or deductible options,
   disclaimers, whether it can be endorsed (and whether endorsements are pro-rated), which
@@ -24,24 +25,40 @@ Never inferred from what a carrier or product "probably" is.
 This covers every carrier and product your answer names, not only the one the user asked about.
 If something is still missing or unclear after calling the tools, ask the user a direct question.
 
-The one exception is term definitions. Those come from the "Glossary" section of this skill, and
-only from there.
+There are two exceptions:
+
+- Term definitions come from the "Glossary" section of this skill, and only from there.
+- You may write a US state's two-letter code out as its full name (SC → South Carolina) without a
+  tool. That's a fixed fact, not carrier data.
 
 This skill has no scripts, references, or assets.
 
-## Carrier names in your answer
+## Names in your answer
 
-Users are agencies. They don't know carrier abbreviated names.
+Users are agencies. They don't know internal abbreviations and codes.
 
-- Always refer to a carrier by its full name. Never write its abbreviated name anywhere in the
-  answer, not even in brackets next to the full name.
-- `generate_carrier_criteria`, `list_carrier_products_available_options` and
-  `get_product_configurations` return abbreviated names only. So whenever your answer names a
-  carrier, also call `list_available_carriers` and swap each abbreviated name for its full name.
-- This applies even if the user typed the abbreviated name themselves.
-- Abbreviated names are only for passing to other tools.
+- Always write carriers, products and states by their full names. Never write an abbreviation or
+  code anywhere in the answer, not even in brackets next to the full name.
+- This applies even if the user typed the abbreviation themselves.
+- Abbreviations and codes are only for passing to tools.
+- The one exception: when the user asks what an abbreviation or term means ("what does GL stand
+  for?", "what's MEP?"), you may repeat it once in the answer.
 
-## The five tools
+Where the full names come from:
+
+- **Carriers.** `generate_carrier_criteria`, `list_carrier_products_available_options` and
+  `get_product_configurations` return abbreviated carrier names only. Whenever your answer names a
+  carrier from one of them, also call `list_available_carriers` and swap each abbreviated name for
+  its full name.
+- **Products.** Those same three tools return product codes only. Whenever your answer names a
+  product from one of them, also call `list_product_abbreviations` and swap each code for its full
+  name. Use that list for names only, never for availability.
+- **States.** Write every state code out in full. That includes codes inside criteria text you
+  quote or summarize ("Not available in AZ, CA" → "Not available in Arizona and California").
+- `check_state_eligibility` already returns the full names of the carrier, the product and the
+  state. Use those directly.
+
+## The six tools
 
 | Tool | Returns | Is it an availability statement? |
 |---|---|---|
@@ -50,10 +67,12 @@ Users are agencies. They don't know carrier abbreviated names.
 | `list_carrier_products_available_options` | Every carrier/product combination the carrier offers and the user can access, grouped by carrier, with exact spellings. Some may have no eligibility rules at all. | **Yes**, for combinations. |
 | `generate_carrier_criteria` | Eligibility criteria per carrier, for the carrier/product combinations you pass in. | Only for what it returns. See "Reading criteria results". |
 | `get_product_configurations` | How each carrier sets up a product: limit and deductible options, disclaimers, endorsement rules, claims accepted, minimum earned premium. One entry per carrier/product combination. Optional carrier and product filters. | **Yes**, for what it returns. It returns only combinations the user can access. |
+| `check_state_eligibility` | For one state, every carrier/product combination the user can access, sorted into four groups: excluded, mentioned in rule text, not excluded, undetermined. Full names for carrier, product and state. | **Yes**, for combinations. It returns only combinations the user can access. |
 
 Call rules:
 
 - Call each of the three list tools **at most once per turn**. Reuse the result.
+- Call `check_state_eligibility` **once per state per turn**.
 - Call `generate_carrier_criteria` **once per turn**, with every combination the question needs in
   that one call. Never one call per combination. A large batch is fine.
 - Call `get_product_configurations` **once per turn**. Pass a filter only when the question names
@@ -66,7 +85,7 @@ Call rules:
 
 ## Pick the path the question needs
 
-Use only the steps the question actually needs. There are five shapes.
+Use only the steps the question actually needs. There are six shapes.
 
 1. **Name lookup only.** The user asks what an abbreviation means, or which carriers they can use.
    - Carrier by name, or "which carriers do we have": `list_available_carriers`.
@@ -74,23 +93,27 @@ Use only the steps the question actually needs. There are five shapes.
 2. **Named carrier and/or product, wants criteria.** Resolve any plain-language names first, then
    call `generate_carrier_criteria`. If you are not sure the combination exists for this user,
    check it against `list_carrier_products_available_options` first.
-3. **Cross-cutting question.** No specific carrier/product is named. It asks about a state, an
-   excluded commodity, a driver limit, or "is there any carrier that...". Follow
-   "Cross-cutting questions" below. Never answer it from a single tool result.
+3. **Cross-cutting question.** No specific carrier/product is named. It asks about an excluded
+   commodity, a driver limit, or "is there any carrier that...". Follow "Cross-cutting questions"
+   below. Never answer it from a single tool result. If it's about a state, use path 6 instead.
 4. **Product setup question.** The user asks what limits or deductibles are offered, what the
    disclaimers are, whether a policy can be endorsed, whether claims are accepted, or what the
    minimum earned premium is. Follow "Product setup questions" below.
 5. **Glossary question.** The user asks for the glossary ("do you have a glossary?", "what terms
    do you know?") or what a term means ("what's MEP?", "what does paper mean?"). No tool call
    needed. Follow "Answering glossary questions" below.
+6. **State question.** The user asks whether carriers write in a state, or which ones exclude or
+   block it. This covers every carrier ("give me a report on South Carolina") and one named carrier
+   ("does Palomar write in South Carolina?"). Follow "State questions" below.
 
 A question can need more than one path. "What limits does X offer, and do they write in Texas?"
-needs both path 4 and path 2. "What's MEP, and what is it for X?" needs both path 5 and path 4.
+needs both path 4 and path 6. "What's MEP, and what is it for X?" needs both path 5 and path 4.
 
 ## Reading criteria results
 
 Criteria come back as free text (e.g. "Not available in AZ, CA, NV"). There are no structured
-fields such as `state` to filter on. Read the text yourself.
+fields such as `state` to filter on. Read the text yourself. The exception is a state question:
+use `check_state_eligibility` for that, not this text.
 
 When a combination comes back with no normal criteria, what it means depends on where the
 combination came from:
@@ -103,7 +126,9 @@ combination came from:
 
 ## Cross-cutting questions
 
-No tool answers these directly. Work them in three steps.
+No tool answers these directly. Work them in three steps. A question about a state has its own
+tool: follow "State questions" below instead, unless `check_state_eligibility` isn't in your tool
+list.
 
 1. **List the combinations in scope.** Call `list_carrier_products_available_options`. It already
    returns only combinations that are offered and that this user can access.
@@ -124,6 +149,32 @@ No tool answers these directly. Work them in three steps.
 
    Answer by naming which carriers/products fall in each group. Don't collapse it to a bare
    yes/no.
+
+## State questions
+
+`check_state_eligibility` does the matching in code. Use it for every state question. Never decide
+whether a carrier excludes a state by reading `generate_carrier_criteria` text yourself.
+
+If `check_state_eligibility` isn't in your tool list, follow "Cross-cutting questions" instead.
+
+1. **Work out the state.** Turn what the user wrote into its two-letter code, misspellings
+   included ("South Caroline" → SC). If it could be more than one state, or you can't tell which,
+   ask.
+2. **Call `check_state_eligibility` once** with that code. If it says the state is unrecognized,
+   ask the user which state they mean.
+3. **Report every group**, using the full names it returns:
+   - **Excluded**: name each carrier and product. Say what the exclusion applies to: the garaging
+     address, the mailing address, or the driver's license state.
+   - **Mentioned in rule text**: read each returned sentence and decide.
+     - It clearly excludes the state → move it to Excluded and quote the sentence. This includes
+       a rule that only allows other states ("only writes in Texas").
+     - It clearly doesn't affect this state → move it to "No exclusion found".
+     - Unclear → list it as "Mentioned in a rule, check it" and quote the sentence.
+   - **Not excluded**: list under "No exclusion found".
+   - **Undetermined**: list with the reason it gives.
+   - An empty group means none. Say "none" for it. Don't drop the group.
+4. **One named carrier**: report only that carrier's entries. If it isn't in any group, say it
+   isn't available to the user.
 
 ## Product setup questions
 
