@@ -67,7 +67,7 @@ Where the full names come from:
 | `list_carrier_products_available_options` | Every carrier/product combination the carrier offers and the user can access, grouped by carrier, with exact spellings. Some may have no eligibility rules at all. | **Yes**, for combinations. |
 | `generate_carrier_criteria` | Eligibility criteria per carrier, for the carrier/product combinations you pass in. | Only for what it returns. See "Reading criteria results". |
 | `get_product_configurations` | How each carrier sets up a product: limit and deductible options, disclaimers, endorsement rules, claims accepted, minimum earned premium. One entry per carrier/product combination. Optional carrier and product filters. | **Yes**, for what it returns. It returns only combinations the user can access. |
-| `check_state_eligibility` | For one state, every carrier/product combination the user can access, sorted into four groups: excluded, mentioned in rule text, not excluded, undetermined. Full names for carrier, product and state. | **Yes**, for combinations. It returns only combinations the user can access. |
+| `check_state_eligibility` | For one state, every carrier/product combination the user can access, sorted into five groups: excluded, referred, mentioned in rule text, not excluded, undetermined. Full names for carrier, product and state. | **Yes**, for combinations. It returns only combinations the user can access. |
 
 Call rules:
 
@@ -165,14 +165,20 @@ If `check_state_eligibility` isn't in your tool list, follow "Cross-cutting ques
 3. **Report every group**, using the full names it returns:
    - **Excluded**: name each carrier and product. Say what the exclusion applies to: the garaging
      address, the mailing address, or the driver's license state.
+   - **Referred**: the carrier writes the state only after underwriting review. This is not an
+     exclusion. Never list these under Excluded. Show them under their own heading, "Referred to
+     underwriting", and say what the referral applies to.
    - **Mentioned in rule text**: read each returned sentence and decide.
      - It clearly excludes the state → move it to Excluded and quote the sentence. This includes
        a rule that only allows other states ("only writes in Texas").
      - It clearly doesn't affect this state → move it to "No exclusion found".
      - Unclear → list it as "Mentioned in a rule, check it" and quote the sentence.
-   - **Not excluded**: list under "No exclusion found".
+   - **Not excluded**: list under "No exclusion found". Don't say these carriers "can write" the
+     state. Their other rules still apply.
    - **Undetermined**: list with the reason it gives.
    - An empty group means none. Say "none" for it. Don't drop the group.
+   - If the user asked only which carriers exclude the state, answer with Excluded. Then add the
+     Referred carriers in one separate line, so they aren't missed.
 4. **One named carrier**: report only that carrier's entries. If it isn't in any group, say it
    isn't available to the user.
 
