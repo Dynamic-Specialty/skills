@@ -220,8 +220,13 @@ gives. "The subject" below means the state or the commodity.
   take" the subject. Their other rules still apply.
 - **Undetermined**: list with the reason it gives.
 - An empty group means none. Say "none" for it. Don't drop the group.
-- If the user asked only which carriers exclude the subject, answer with Excluded. Then add the
-  Referred carriers in one separate line, so they aren't missed.
+- If the user asked only which carriers exclude the subject, answer with Excluded. Then add, so
+  nothing is missed:
+  - the Referred carriers, in one line;
+  - the Mentioned carriers, in one line, as "Check these rules too:", with the quoted sentence or a
+    short reason.
+- Never sum up the rest as "all other carriers allow it" or "the others can take it". Say "No
+  exclusion found for the other carriers."
 - **One named carrier**: report only that carrier's entries. If it isn't in any group, say it isn't
   available to the user.
 
