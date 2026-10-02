@@ -3,8 +3,9 @@ name: home-page-carrier-product-eligibility-lookup
 description: >
   Use when answering a free-text home-page question that needs a carrier or product name
   resolved to its exact code, a carrier's eligibility criteria for a product looked up, a
-  question about which carriers exclude or write in a state (for every carrier or one named
-  carrier), a cross-cutting eligibility question (an exclusion or limit that might apply "for any
+  question about which carriers exclude or write in a state, or exclude or take a commodity
+  (livestock, lithium batteries, hazmat...), for every carrier or one named carrier, a
+  cross-cutting eligibility question (an exclusion or limit that might apply "for any
   carrier") answered by checking across multiple carriers/products rather than one named pair,
   or a question about how a carrier sets up a product: its limit or deductible options,
   disclaimers, whether it can be endorsed (and whether endorsements are pro-rated), which
@@ -55,10 +56,12 @@ Where the full names come from:
   name. Use that list for names only, never for availability.
 - **States.** Write every state code out in full. That includes codes inside criteria text you
   quote or summarize ("Not available in AZ, CA" → "Not available in Arizona and California").
-- `check_state_eligibility` already returns the full names of the carrier, the product and the
-  state. Use those directly.
+- **Commodities.** Use the full name `check_commodity_eligibility` returns, description included
+  ("Batteries (lithium)"). Never shorten it or reword it.
+- `check_state_eligibility` and `check_commodity_eligibility` already return full names for the
+  carrier, the product, and the state or commodity. Use those directly, exactly as written.
 
-## The six tools
+## The seven tools
 
 | Tool | Returns | Is it an availability statement? |
 |---|---|---|
@@ -68,11 +71,13 @@ Where the full names come from:
 | `generate_carrier_criteria` | Eligibility criteria per carrier, for the carrier/product combinations you pass in. | Only for what it returns. See "Reading criteria results". |
 | `get_product_configurations` | How each carrier sets up a product: limit and deductible options, disclaimers, endorsement rules, claims accepted, minimum earned premium. One entry per carrier/product combination. Optional carrier and product filters. | **Yes**, for what it returns. It returns only combinations the user can access. |
 | `check_state_eligibility` | For one state, every carrier/product combination the user can access, sorted into five groups: excluded, referred, mentioned in rule text, not excluded, undetermined. Full names for carrier, product and state. | **Yes**, for combinations. It returns only combinations the user can access. |
+| `check_commodity_eligibility` | Finds the commodity in the catalog from the agency's words. For one match: the same five groups as `check_state_eligibility`. For several matches: only the candidates. For none: close suggestions. | **Yes**, for combinations. It returns only combinations the user can access. |
 
 Call rules:
 
 - Call each of the three list tools **at most once per turn**. Reuse the result.
 - Call `check_state_eligibility` **once per state per turn**.
+- Call `check_commodity_eligibility` **once per commodity per turn**.
 - Call `generate_carrier_criteria` **once per turn**, with every combination the question needs in
   that one call. Never one call per combination. A large batch is fine.
 - Call `get_product_configurations` **once per turn**. Pass a filter only when the question names
@@ -85,7 +90,7 @@ Call rules:
 
 ## Pick the path the question needs
 
-Use only the steps the question actually needs. There are six shapes.
+Use only the steps the question actually needs. There are seven shapes.
 
 1. **Name lookup only.** The user asks what an abbreviation means, or which carriers they can use.
    - Carrier by name, or "which carriers do we have": `list_available_carriers`.
@@ -93,9 +98,10 @@ Use only the steps the question actually needs. There are six shapes.
 2. **Named carrier and/or product, wants criteria.** Resolve any plain-language names first, then
    call `generate_carrier_criteria`. If you are not sure the combination exists for this user,
    check it against `list_carrier_products_available_options` first.
-3. **Cross-cutting question.** No specific carrier/product is named. It asks about an excluded
-   commodity, a driver limit, or "is there any carrier that...". Follow "Cross-cutting questions"
-   below. Never answer it from a single tool result. If it's about a state, use path 6 instead.
+3. **Cross-cutting question.** No specific carrier/product is named. It asks about a driver limit,
+   an excluded unit type, or "is there any carrier that...". Follow "Cross-cutting questions"
+   below. Never answer it from a single tool result. If it's about a state, use path 6 instead. If
+   it's about a commodity, use path 7 instead.
 4. **Product setup question.** The user asks what limits or deductibles are offered, what the
    disclaimers are, whether a policy can be endorsed, whether claims are accepted, or what the
    minimum earned premium is. Follow "Product setup questions" below.
@@ -105,6 +111,9 @@ Use only the steps the question actually needs. There are six shapes.
 6. **State question.** The user asks whether carriers write in a state, or which ones exclude or
    block it. This covers every carrier ("give me a report on South Carolina") and one named carrier
    ("does Palomar write in South Carolina?"). Follow "State questions" below.
+7. **Commodity question.** The user asks which carriers exclude or take a commodity, whether they
+   can haul it with a carrier, or for a report on it ("which carriers exclude livestock?", "can
+   Palomar take ice cream?"). Follow "Commodity questions" below.
 
 A question can need more than one path. "What limits does X offer, and do they write in Texas?"
 needs both path 4 and path 6. "What's MEP, and what is it for X?" needs both path 5 and path 4.
@@ -112,8 +121,9 @@ needs both path 4 and path 6. "What's MEP, and what is it for X?" needs both pat
 ## Reading criteria results
 
 Criteria come back as free text (e.g. "Not available in AZ, CA, NV"). There are no structured
-fields such as `state` to filter on. Read the text yourself. The exception is a state question:
-use `check_state_eligibility` for that, not this text.
+fields such as `state` to filter on. Read the text yourself. The exceptions are state and
+commodity questions: use `check_state_eligibility` or `check_commodity_eligibility` for those, not
+this text.
 
 When a combination comes back with no normal criteria, what it means depends on where the
 combination came from:
@@ -126,9 +136,9 @@ combination came from:
 
 ## Cross-cutting questions
 
-No tool answers these directly. Work them in three steps. A question about a state has its own
-tool: follow "State questions" below instead, unless `check_state_eligibility` isn't in your tool
-list.
+No tool answers these directly. Work them in three steps. Questions about a state or a commodity
+have their own tools: follow "State questions" or "Commodity questions" below instead, unless that
+tool isn't in your tool list.
 
 1. **List the combinations in scope.** Call `list_carrier_products_available_options`. It already
    returns only combinations that are offered and that this user can access.
@@ -162,25 +172,58 @@ If `check_state_eligibility` isn't in your tool list, follow "Cross-cutting ques
    ask.
 2. **Call `check_state_eligibility` once** with that code. If it says the state is unrecognized,
    ask the user which state they mean.
-3. **Report every group**, using the full names it returns:
-   - **Excluded**: name each carrier and product. Say what the exclusion applies to: the garaging
-     address, the mailing address, or the driver's license state.
-   - **Referred**: the carrier writes the state only after underwriting review. This is not an
-     exclusion. Never list these under Excluded. Show them under their own heading, "Referred to
-     underwriting", and say what the referral applies to.
-   - **Mentioned in rule text**: read each returned sentence and decide.
-     - It clearly excludes the state → move it to Excluded and quote the sentence. This includes
-       a rule that only allows other states ("only writes in Texas").
-     - It clearly doesn't affect this state → move it to "No exclusion found".
-     - Unclear → list it as "Mentioned in a rule, check it" and quote the sentence.
-   - **Not excluded**: list under "No exclusion found". Don't say these carriers "can write" the
-     state. Their other rules still apply.
-   - **Undetermined**: list with the reason it gives.
-   - An empty group means none. Say "none" for it. Don't drop the group.
-   - If the user asked only which carriers exclude the state, answer with Excluded. Then add the
-     Referred carriers in one separate line, so they aren't missed.
-4. **One named carrier**: report only that carrier's entries. If it isn't in any group, say it
-   isn't available to the user.
+3. **Report every group** as described in "Reporting the groups" below. For each Excluded or
+   Referred entry, say what it applies to: the garaging address, the mailing address, or the
+   driver's license state.
+
+## Commodity questions
+
+`check_commodity_eligibility` finds the commodity in the catalog and does the matching in code. Use
+it for every commodity question. Never decide whether a carrier excludes a commodity by reading
+`generate_carrier_criteria` text yourself. Those lists run to hundreds of names.
+
+If `check_commodity_eligibility` isn't in your tool list, follow "Cross-cutting questions" instead.
+
+1. **Call it with the agency's words**, in plain language. Translate trucking slang first, using
+   the "Trucking terms" glossary ("hazmat" → "hazardous materials").
+2. **Read what came back.**
+   - **A commodity and the groups**: go to step 3.
+   - **Candidates**: more than one commodity matches. List every candidate by its full name and ask
+     which one the agency means. Never pick one yourself, even if one looks likely. If there are
+     more candidates than listed, say so and ask the agency to be more specific.
+   - **No match**: if it returned suggestions, offer them by name and ask if one is what the agency
+     means. If not, say the commodity isn't in the commodity list, and ask them to describe it
+     another way.
+   - **When the agency picks a candidate or a suggestion** (in their next message), call the tool
+     again with that commodity's full name copied exactly from your list, and `exactName` set to
+     true. Copying the name exactly matters: a bare name like "Batteries" means that one entry
+     only when `exactName` is true.
+3. **Report every group** as described in "Reporting the groups" below, naming the commodity by its
+   full name. For each Excluded or Referred entry, say why: the carrier's excluded commodities list,
+   or the commodity's group (e.g. "commodity group J").
+
+## Reporting the groups
+
+For state and commodity questions, report every group the tool returns, using the full names it
+gives. "The subject" below means the state or the commodity.
+
+- **Excluded**: name each carrier and product.
+- **Referred**: the carrier writes the subject only after underwriting review. This is not an
+  exclusion. Never list these under Excluded. Show them under their own heading, "Referred to
+  underwriting".
+- **Mentioned in rule text**: read each returned sentence and decide.
+  - It clearly excludes the subject → move it to Excluded and quote the sentence. This includes a
+    rule that only allows others ("only writes in Texas", "only writes dry van").
+  - It clearly doesn't affect the subject → move it to "No exclusion found".
+  - Unclear → list it as "Mentioned in a rule, check it" and quote the sentence.
+- **Not excluded**: list under "No exclusion found". Don't say these carriers "can write" or "can
+  take" the subject. Their other rules still apply.
+- **Undetermined**: list with the reason it gives.
+- An empty group means none. Say "none" for it. Don't drop the group.
+- If the user asked only which carriers exclude the subject, answer with Excluded. Then add the
+  Referred carriers in one separate line, so they aren't missed.
+- **One named carrier**: report only that carrier's entries. If it isn't in any group, say it isn't
+  available to the user.
 
 ## Product setup questions
 
@@ -281,3 +324,4 @@ In these terms, "carrier" means the trucking company (motor carrier), not an ins
 | OTR | Over-the-road. |
 | Power only | Hauling someone else's trailer. |
 | Bobtail | A tractor without a trailer. |
+| Hazmat | Hazardous materials. |
