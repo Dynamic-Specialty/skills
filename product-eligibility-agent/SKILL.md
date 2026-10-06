@@ -7,6 +7,7 @@ description: >
   (livestock, lithium batteries, hazmat...), for every carrier or one named carrier, a
   cross-cutting eligibility question (an exclusion or limit that might apply "for any
   carrier") answered by checking across multiple carriers/products rather than one named pair,
+  a question about how strict a carrier is or which carriers are the least or most strict,
   or a question about how a carrier sets up a product: its limit or deductible options,
   disclaimers, whether it can be endorsed (and whether endorsements are pro-rated), which
   endorsements change the premium, whether claims are accepted, or its minimum earned premium.
@@ -67,7 +68,7 @@ Where the full names come from:
 |---|---|---|
 | `list_available_carriers` | Each carrier's full name and its exact abbreviated name. | **Yes.** A carrier missing from this list is not available to the user. |
 | `list_product_abbreviations` | Each active product's full name and its exact abbreviated code. | **No.** It is a glossary only. Never say a product is or isn't available based on it. |
-| `list_carrier_products_available_options` | Every carrier/product combination the carrier offers and the user can access, grouped by carrier, with exact spellings. Some may have no eligibility rules at all. | **Yes**, for combinations. |
+| `list_carrier_products_available_options` | Every carrier/product combination the carrier offers and the user can access, grouped by carrier, with exact spellings. Some may have no criteria recorded, which never means the carrier has no rules. | **Yes**, for combinations. |
 | `generate_carrier_criteria` | Eligibility criteria per carrier, for the carrier/product combinations you pass in. | Only for what it returns. See "Reading criteria results". |
 | `get_product_configurations` | How each carrier sets up a product: limit and deductible options, disclaimers, endorsement rules, claims accepted, minimum earned premium. One entry per carrier/product combination. Optional carrier and product filters. | **Yes**, for what it returns. It returns only combinations the user can access. |
 | `check_state_eligibility` | For one state, every carrier/product combination the user can access, sorted into five groups: excluded, referred, mentioned in rule text, not excluded, undetermined. Full names for carrier, product and state. | **Yes**, for combinations. It returns only combinations the user can access. |
@@ -90,7 +91,7 @@ Call rules:
 
 ## Pick the path the question needs
 
-Use only the steps the question actually needs. There are seven shapes.
+Use only the steps the question actually needs. There are eight shapes.
 
 1. **Name lookup only.** The user asks what an abbreviation means, or which carriers they can use.
    - Carrier by name, or "which carriers do we have": `list_available_carriers`.
@@ -101,7 +102,8 @@ Use only the steps the question actually needs. There are seven shapes.
 3. **Cross-cutting question.** No specific carrier/product is named. It asks about a driver limit,
    an excluded unit type, or "is there any carrier that...". Follow "Cross-cutting questions"
    below. Never answer it from a single tool result. If it's about a state, use path 6 instead. If
-   it's about a commodity, use path 7 instead.
+   it's about a commodity, use path 7 instead. If it asks how strict carriers are, use path 8
+   instead.
 4. **Product setup question.** The user asks what limits or deductibles are offered, what the
    disclaimers are, whether a policy can be endorsed, whether claims are accepted, or what the
    minimum earned premium is. Follow "Product setup questions" below.
@@ -114,6 +116,10 @@ Use only the steps the question actually needs. There are seven shapes.
 7. **Commodity question.** The user asks which carriers exclude or take a commodity, whether they
    can haul it with a carrier, or for a report on it ("which carriers exclude livestock?", "can
    Palomar take ice cream?"). Follow "Commodity questions" below.
+8. **Strictness question.** The user asks how strict a carrier is, or which carriers are the least
+   or most strict ("which carrier is the least strict?", "who has the broadest appetite?", "how
+   strict is Palomar?"). Follow "Comparing how strict carriers are" below. If it's about one state
+   or one commodity ("who is least strict about livestock?"), use path 6 or 7 instead.
 
 A question can need more than one path. "What limits does X offer, and do they write in Texas?"
 needs both path 4 and path 6. "What's MEP, and what is it for X?" needs both path 5 and path 4.
@@ -131,8 +137,16 @@ combination came from:
 | What came back | Where the combination came from | What it means | What to tell the user |
 |---|---|---|---|
 | Nothing | You typed or assumed it | The combination wasn't recognized: a spelling error, or it doesn't exist. | Confirm the carrier/product with the user. Don't say "nothing to report". |
-| Nothing | `list_carrier_products_available_options` | Unclear. The carrier may simply have no rules for that product. | Say no criteria were found for it. Don't claim "excluded" or "no restrictions". |
+| Nothing | `list_carrier_products_available_options` | The criteria aren't recorded here. The carrier still has rules (see below). | Say no criteria were found for it. Don't claim "excluded", "no restrictions" or "no rules". |
 | A single message saying the user lacks access | Either | An access restriction, not an eligibility rule. | Tell the user they don't have access to that carrier and product. Use the carrier's full name. Never present it as a criterion. |
+
+**No criteria found never means no rules.** Every carrier has eligibility rules. Some carriers'
+rules are checked in the carrier's own system and never stored here. Others just haven't been set
+up here yet. You can't tell which. So an empty result says nothing about the carrier's rules or how
+strict it is.
+
+- Never describe it as "no rules", "no restrictions", "open" or "takes everything".
+- Never count it in the carrier's favor when comparing carriers.
 
 ## Cross-cutting questions
 
@@ -159,6 +173,30 @@ tool isn't in your tool list.
 
    Answer by naming which carriers/products fall in each group. Don't collapse it to a bare
    yes/no.
+
+## Comparing how strict carriers are
+
+Judge strictness only from criteria that came back. A carrier with no criteria found is unknown,
+never the least strict (see "No criteria found never means no rules" above).
+
+1. **List the combinations in scope.** Call `list_carrier_products_available_options`. If the
+   question names a carrier or a product, keep only its combinations.
+2. **Get criteria for all of them in one call** to `generate_carrier_criteria`.
+3. **Split them in two:**
+   - **Criteria found**: compare these by what their rules exclude or require.
+   - **No criteria found**: leave these out of the comparison. Never rank them, and never name
+     them as the least or most strict.
+
+   A combination that came back with an access message is handled as in "Reading criteria
+   results". Leave it out of the comparison too.
+4. **Answer** with the comparison first. Then list the second group under its own heading,
+   "Couldn't compare: no criteria found", with one line saying their rules aren't recorded here,
+   which doesn't mean they have none.
+
+If the question names one carrier and no criteria were found for it, say you can't tell how strict
+it is because its rules aren't recorded here. Don't say it has no rules or no restrictions.
+
+If no combination in scope has criteria, say none can be compared. Don't pick one.
 
 ## State questions
 
@@ -218,7 +256,8 @@ gives. "The subject" below means the state or the commodity.
   - Unclear → list it as "Mentioned in a rule, check it" and quote the sentence.
 - **Not excluded**: list under "No exclusion found". Don't say these carriers "can write" or "can
   take" the subject. Their other rules still apply.
-- **Undetermined**: list with the reason it gives.
+- **Undetermined**: list with the reason it gives. These are unknowns. Never present them as having
+  no restrictions.
 - An empty group means none. Say "none" for it. Don't drop the group.
 - If the user asked only which carriers exclude the subject, answer with Excluded. Then add, so
   nothing is missed:
