@@ -224,8 +224,10 @@ ranking tool" below instead.
      commodities excluded), and the lowest total of places ranks first. Carriers with the same rank
      are tied.
    - **For one named carrier:** its position ("2nd least strict of 9 for Physical Damage"), where it
-     placed on each measure, and its main limits. Rank 3 of 11 means the 3rd least strict: two
-     carriers are less strict, eight are stricter. A place of 1 on a measure means the fewest.
+     placed on each measure, and its main limits. Rank 3 of 11 means the 3rd least strict. A place
+     of 1 on a measure means the fewest.
+   - **How many carriers are less strict, stricter, or tied:** copy `lessStrictCount`,
+     `stricterCount` and `tiedWithCount`. Never work these out from the rank yourself.
    - Explain a position in plain words from `limits`, `excludedLists` and `underwritingQuestions`
      ("drivers 21 to 75", "blocks 42 US states", "refers accounts above 5 power units"). Use each
      item's friendly name. Never show a field name, a value such as `AT_MOST`, or a code.
@@ -248,7 +250,7 @@ How to read the result:
 | Field | Meaning |
 |---|---|
 | `otherRulesPlace` / `usStatesPlace` / `commoditiesPlace` | The carrier's place on each measure, 1 = fewest. Equal counts share a place. |
-| `score` | The sum of the three places. Lowest ranks first. |
+| `lessStrictCount` / `stricterCount` / `tiedWithCount` | How many ranked carriers are less strict than this one, stricter, or tied with it. Counted across every ranked carrier, even when the result shows only one. |
 | `otherBlockingRules` | Rules that decline a quote, not counting the US-state and commodity lists (those have their own measures). |
 | `requirement` | `AT_LEAST` / `AT_MOST` / `MORE_THAN` / `LESS_THAN` the `value`; `MUST_BE_TRUE` / `MUST_BE_FALSE` for a yes/no check or an underwriting question ("must not answer yes"). |
 | `scope` | `QUOTE`: the account as a whole. `EACH_DRIVER` / `EACH_UNIT`: every driver or unit. `ANY_DRIVER` / `ANY_UNIT`: at least one. |
