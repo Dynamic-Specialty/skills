@@ -189,9 +189,10 @@ applies. Use it for every strictness question. Never compare strictness by readi
 ranking tool" below instead.
 
 1. **Work out the product.** A ranking is always for one product.
-   - If the question names no product, ask which one. Name the products on offer by their full
-     names, from `list_carrier_products_available_options` and `list_product_abbreviations`.
+   - If the question names no product, ask which one.
    - "How strict is X?": if X offers one product, use it. If it offers several, ask which one.
+   - When you ask, never suggest products: no examples, no list of options, no names or codes.
+     Just ask which product the user means.
 2. **Call `compare_carrier_strictness` once**, with the product code. For one named carrier, also
    pass its abbreviated name.
 3. **Answer** in this order:
