@@ -37,7 +37,8 @@ underwriter. A list of the facts and every incident is shown right below your te
   - a license that is suspended, revoked, cancelled, disqualified or expired;
   - major violations and at-fault accidents in the last three years;
   - recent minor violations;
-  - a report more than 30 days old;
   - missing details: CDL status, date of birth, or incidents with unknown fault or severity.
+- Don't comment on how old the report is. It doesn't decide whether a carrier accepts the driver,
+  and its date is already in the fact list.
 - If the conversation mentions something relevant, such as the product the user cares about, you may
   refer to it briefly.

@@ -27,8 +27,10 @@ short overview above it.
 - `DECLINES`: at least one driver rule declines. The reasons name it.
 - `notes`: driver rules that could not be checked from an MVR, because they depend on quote details,
   are switched off at quote time, or could not be evaluated.
-- A reason ending "Checked from the MVR; not enforced at quote time" comes from a suspension or
-  MVR-age rule that quoting doesn't check today. Say so when it drives a decline.
+- A reason ending "Checked from the MVR; not enforced at quote time" comes from a suspension rule
+  that quoting doesn't check today. Say so when it drives a decline.
+- How old the MVR is never changes a result. `reportAgeDays` and each carrier's `mvrMaxAgeDays`
+  only feed a note shown under the table. Don't mention the MVR's age unless the user asks about it.
 - `externallyCheckedCarriers` check eligibility in their own system, so they could not be screened
   here.
 
