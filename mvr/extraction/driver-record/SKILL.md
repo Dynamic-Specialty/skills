@@ -78,10 +78,13 @@ legends are not entries.
 - `kind`:
   - `VIOLATION`: a conviction or citation for a moving traffic offense.
   - `ACCIDENT`: a reported crash.
-  - `SUSPENSION`: a suspension, revocation, cancellation or disqualification action, including ones
-    that have ended.
+  - `SUSPENSION`: an action taken against the license or the CDL: a suspension, revocation,
+    cancellation, withdrawal or disqualification, including ones that have ended. An entry that
+    shows "item affected", "eligible for reinstatement" or "withdrawal" is such an action, even when
+    its description names the offense behind it. Record it as `SUSPENSION`, never as a violation.
   - `OTHER`: anything else: non-moving offenses (parking, equipment, registration, insurance
-    paperwork), reinstatements, administrative entries.
+    paperwork), failing to pay a fine or to answer or appear for a citation, reinstatements and
+    other administrative entries.
 - `date`: the date of the offense or accident. If only a conviction date is printed, use it. Use a
   posting date only when nothing else is printed.
 - `description`: as printed, including any code.
