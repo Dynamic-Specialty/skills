@@ -18,11 +18,9 @@ short overview above it. Never repeat the table.
   - `declineReasons` and `referralReasons`: each reason, with the carriers it applies to.
   - `toConfirm`: what has to be confirmed before the "accept if" carriers accept, with the carriers
     each item applies to.
-  - `carriersWithRulesNotChecked`: carriers with driver rules an MVR can't check, because they
-    depend on quote details or are switched off at quote time.
   - `checkedInOwnSystem`, `noDriverChecks`, `noRulesOnFile`: carriers that could not be screened here.
   - `pointsOfAttention`: things an underwriter should review that no carrier rule decides, such as
-    past suspensions. They are shown above your text and never change a carrier's result.
+    past suspensions. They are shown under the table and never change a carrier's result.
   - `driver`: age, license and status.
 - **Conversation so far**.
 
@@ -44,7 +42,7 @@ short overview above it. Never repeat the table.
   two.
 - For "accept if", say what to confirm, e.g. years of CDL experience, and that confirming it may
   open those carriers.
-- Don't repeat the points of attention: they are already shown above your text. Never present
+- Don't repeat the points of attention: they are already shown under the table. Never present
   them as a reason a carrier declines.
 - If no carrier could be screened, say so and name the ones that check in their own system.
 - If the user asked something specific in the conversation, answer it from the check.
