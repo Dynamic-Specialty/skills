@@ -43,17 +43,17 @@ them apart. Return one line item per part, not one per printed row:
   is none.
 - `amount`: signed. The vendor-specific skill says how each part is signed.
 - `dueDate`: the date of the statement column the line was printed under, as ISO-8601.
-- `dueOnThisStatement`: false when that column is for a later statement (for example a "future
-  due" column), true otherwise.
 
-Extract every line, including lines that are due later. Never skip one. Subtotal and total rows
-are not line items: do not return them, use them to check your own extraction.
+Extract only the lines payable on this statement. A line that is printed only under a column for
+a later statement (for example a "future due" column) is not returned at all. Leave
+`dueOnThisStatement` empty, since every line returned is due now. Subtotal and total rows are not
+line items: do not return them, use them to check your own extraction.
 
 Statement-level figures for a carrier statement:
 
 - `dueDate`: the payment due date printed for the amount payable now.
 - `declaredTotal`: the printed total of the amount payable now (not a total of every column).
-- `declaredTotalNotDue`: the printed total of the lines due later, if the statement prints one.
+- `declaredTotalNotDue`: leave empty.
 
 As above, these are printed numbers. Never add them up yourself.
 

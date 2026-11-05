@@ -46,19 +46,21 @@ past due, current due, future due, comments.
   "Premium Mismatch" or "Late Entered") into `sourceFields`.
 - `policyEffectiveDate` is the "pol eff date" of the policy.
 
-## Which column a line belongs to
+## Which rows to extract
 
-- If the row has an amount under "current due" (or "past due pay on receipt"), both of its lines
-  have `dueOnThisStatement` true and `dueDate` is the date in the "current due" heading.
-- If the row has an amount under "future due", both of its lines have `dueOnThisStatement` false
-  and `dueDate` is the date in the "future due" heading.
-- A row is normally in only one of the two columns. If the columns do not add up to the net
-  premium, extract the row as printed and say so in `sourceFields.comments`.
+- Each row has three amount columns after the net premium: "past due pay on receipt", "current
+  due" and "future due". The net premium is printed in exactly one of them, and the other two
+  show 0.00. Look at all three before deciding.
+- Extract the row only if its amount is under "current due" or "past due pay on receipt". Its
+  lines get `dueDate` from the "current due" heading.
+- If the amount is under "future due", skip the row completely. Return no line for it.
+- If the three columns do not add up to the net premium, extract the row as printed and say so in
+  `sourceFields.comments`.
 
 ## Statement-level figures
 
 - `documentDate`: the "date mailed".
 - `dueDate`: the date in the "current due" column heading.
 - `declaredTotal`: the "current due" figure on the "STATEMENT TOTAL" row.
-- `declaredTotalNotDue`: the "future due" figure on the "STATEMENT TOTAL" row.
-- The `amount` of all lines with `dueOnThisStatement` true should add up to `declaredTotal`.
+- `declaredTotalNotDue`: leave empty.
+- The `amount` of all lines returned should add up to `declaredTotal`.
