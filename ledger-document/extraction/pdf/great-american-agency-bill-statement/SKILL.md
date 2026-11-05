@@ -57,8 +57,9 @@ past due, current due, future due, comments.
   "current due" heading.
 - If only `futureDue` is not 0.00, the row is due on a later statement. Do not return it: it is
   not extracted, and it counts for nothing on this statement.
-- Every line you return has a `dueDate`. If you find that a row's lines would have none, the row
-  is due later: remove its lines instead of returning them.
+- Every line you return that is payable now has a `dueDate`. If a row's lines would have none, the
+  row is due later: do not return it, or if you did, set `dueOnThisStatement` to `false` on each of
+  its lines.
 - If the three columns do not add up to the net premium, extract the row as printed and say so in
   `sourceFields.comments`.
 
