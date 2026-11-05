@@ -48,14 +48,23 @@ past due, current due, future due, comments.
 
 ## Which rows to extract
 
-- Each row has three amount columns after the net premium: "past due pay on receipt", "current
-  due" and "future due". The net premium is printed in exactly one of them, and the other two
-  show 0.00. Look at all three before deciding.
-- Extract the row only if its amount is under "current due" or "past due pay on receipt". Its
-  lines get `dueDate` from the "current due" heading.
-- If the amount is under "future due", skip the row completely. Return no line for it.
+- In the page text, the last three dollar amounts of a row are, in this order: past due pay on
+  receipt, current due, future due. The amount before them is the net premium. The net premium is
+  repeated in exactly one of the three, and the other two show 0.00.
+- For every row, first copy those three amounts into `sourceFields` as `pastDue`, `currentDue` and
+  `futureDue`, exactly as printed. Then decide from them.
+- Extract the row only if `pastDue` or `currentDue` is not 0.00. Its lines get `dueDate` from the
+  "current due" heading.
+- If only `futureDue` is not 0.00, the row is due on a later statement. Do not return it: it is
+  not extracted, and it counts for nothing on this statement.
 - If the three columns do not add up to the net premium, extract the row as printed and say so in
   `sourceFields.comments`.
+
+Examples, from the page text (gross, comm %, net, then the three due amounts):
+
+- `$ 696.00 20.00 $ 556.80 $ 0.00 $ 556.80 $ 0.00` has `currentDue` 556.80. Extract it.
+- `$ (1,553.00) 20.00 $ (1,242.40) $ 0.00 $ 0.00 $ (1,242.40)` has only `futureDue`. Do not
+  return it.
 
 ## Statement-level figures
 
