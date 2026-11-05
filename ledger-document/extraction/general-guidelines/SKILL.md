@@ -68,3 +68,17 @@ continuation row at the top of the first real page, which has none of its own.
 
 Return statement-level figures (`documentDate`, `declaredTotal`, `dueDate` and so on) only if they
 are printed on the pages you were given. Otherwise leave them empty.
+
+## Page text
+
+A request for a PDF may also carry "Page text", the file's own text layer, one block per page.
+Each printed row is one line of that text, with its columns in order.
+
+- Take amounts, dates, identifiers and names from the text. It is exact; reading them off the
+  image is where mistakes happen.
+- To decide which column an amount is under, count its position among the row's amounts in the
+  text and match that to the column headings on the same page. A column that does not apply shows
+  as 0.00, so every column is present.
+- Use the image only to check the layout and to catch anything the text left out or garbled.
+- If the text and the image disagree about a number, use the text.
+- If there is no page text, read the image as before.
