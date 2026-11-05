@@ -60,8 +60,16 @@ past due, current due, future due, comments.
 - Every line you return that is payable now has a `dueDate`. If a row's lines would have none, the
   row is due later: do not return it, or if you did, set `dueOnThisStatement` to `false` on each of
   its lines.
+- A "Payment" row is the exception to the three rules above. Its three due amounts all show 0.00,
+  because the payment is already counted in the current due figure of its policy. Always return it:
+  one line with the printed amount, `dueDate` from the "current due" heading, and
+  `dueOnThisStatement` empty. Never set it to `false`.
 - If the three columns do not add up to the net premium, extract the row as printed and say so in
   `sourceFields.comments`.
+
+Example of a Payment row, from the page text:
+`Payment 08/13/2026 $ (534.20) 0.00 $ (534.20) $ 0.00 $ 0.00 $ 0.00 Premium Mismatch`. Return it,
+with amount -534.20.
 
 Examples, from the page text (gross, comm %, net, then the three due amounts):
 
