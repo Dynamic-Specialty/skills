@@ -45,9 +45,14 @@ them apart. Return one line item per part, not one per printed row:
 - `dueDate`: the date of the statement column the line was printed under, as ISO-8601.
 
 Extract only the lines payable on this statement. A line that is printed only under a column for
-a later statement (for example a "future due" column) is not returned at all. Leave
-`dueOnThisStatement` empty, since every line returned is due now. Subtotal and total rows are not
-line items: do not return them, use them to check your own extraction.
+a later statement (for example a "future due" column) should not be returned.
+
+- `dueOnThisStatement`: set it to `false` on any line you return that is not payable on this
+  statement. A line marked `false` is discarded afterwards, so when a line is not clearly payable
+  now, mark it `false` rather than leaving it empty. Leave it empty on a line that is payable now.
+
+Subtotal and total rows are not line items: do not return them, use them to check your own
+extraction.
 
 Statement-level figures for a carrier statement:
 
