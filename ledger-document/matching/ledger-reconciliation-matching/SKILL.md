@@ -12,7 +12,7 @@ person accepts or rejects each suggestion.
 
 1. Call get_realm_ledger_entries once, before evaluating any line. It takes no arguments and
    returns the open OURS entries (the candidates) that still have a balance left.
-2. Call record_disbursement_matches once, with only the lines you suggest a match for. Leave out
+2. Call record_statement_matches once, with only the lines you suggest a match for. Leave out
    lines with no plausible match, and lines you would score below 65. A person matches those by
    hand. If no line qualifies, call it with an empty list.
 
@@ -92,7 +92,7 @@ agency, so ignore agency.
 - Reason code (BIND, RENEWAL, ENDORSEMENT, CANCELLED, REINSTATEMENT): it should agree with the
   candidate's. A mismatch lowers the confidence.
 
-## record_disbursement_matches fields
+## record_statement_matches fields
 
 Per line:
 - lineIndex: the exact lineIndex the line was labeled with, not its referenceId. The referenceId
