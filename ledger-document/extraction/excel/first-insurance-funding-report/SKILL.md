@@ -22,8 +22,8 @@ Per line item:
   Proceeds, which describe the whole loan, not this one coverage.
 - policyEffectiveDate: the coverage row's own Effective Date. The loan header carries no date of
   its own.
-- policyNumber: take it verbatim, including a literal placeholder like "Pending" or "TBD" when
-  that's what's printed -- don't invent a real-looking number.
+- policyNumber: take it as printed. When what is printed is a placeholder like "Pending" or "TBD",
+  return no policy number. Never return the placeholder, and don't invent a real-looking number.
 - referenceId: the loan's Loan Number. Multiple coverage rows under the same loan legitimately
   share it -- that's not a sign of a duplicate or an error.
 - insuredName / agencyName: from the loan header, the same for every coverage row under it.
