@@ -63,6 +63,10 @@ Confidence:
 - Reserve top confidence for a real identifier match, or a full/near-full amount match alongside a
   close effective-start-date -- not just because every ordinary attribute happens to align.
 
+Confidence floor: if your confidence for a line is below 65, leave that line out of
+record_disbursement_matches. Do not include it with a low score. A person matches it by hand, and
+a weak guess costs them more than a missing suggestion.
+
 ## Carrier statements (realm type CARRIER)
 
 These rules replace the agency-based baseline above. Carrier lines and carrier candidates have no
