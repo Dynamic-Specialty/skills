@@ -1,134 +1,111 @@
 ---
 name: ledger-reconciliation-matching
 description: >
-  Use when proposing a match between a saved statement line item and an existing, open OURS
-  LedgerEntry on the same realm, before a person accepts or rejects the suggestion.
+  Use when proposing a match between a saved statement line and an open OURS ledger entry on the
+  same realm, before a person accepts or rejects the suggestion.
 ---
 
-Match each confirmed line item against a real, open OURS LedgerEntry for the same realm.
+Match statement lines against open OURS ledger entries on the same realm. You only suggest. A
+person accepts or rejects each suggestion.
 
-An OURS entry with existing matches is still a valid candidate. PFCs routinely split a payment
-across statements (e.g. $200 today, $800 later) or send duplicate/overlapping payments for the
-same event -- matching the same OURS entry more than once is normal, not an error.
+## How to answer
 
-You'll typically match several line items from one statement in the same turn -- see Tool usage.
+1. Call get_realm_ledger_entries once, before evaluating any line. It takes no arguments and
+   returns the open OURS entries (the candidates) that still have a balance left.
+2. Call record_disbursement_matches once, with only the lines you suggest a match for. Leave out
+   lines with no plausible match, and lines you would score below 65. A person matches those by
+   hand. If no line qualifies, call it with an empty list.
 
-**This task is not complete until you call record_disbursement_matches.** Reasoning about the
-matches in your response text, without making that call, does not record anything -- no entries
-get created and the whole statement fails.
+Reasoning in text records nothing. The task is complete only when step 2 is called.
 
-**This skill has no scripts, references, or assets.**
+Each candidate has alreadyMatchedAmount: what is already confirmed against it. The remaining
+balance is its amount minus alreadyMatchedAmount. Several statement lines may match one candidate
+(for example a split payment) while it has balance left.
 
-## Matching approach
+## Evidence
 
-Baseline: insured name + agency name aligning. Compare by proximity, not exact equality --
-abbreviations, punctuation, and minor typos still count, and a one/two-character difference is
-much stronger evidence than sharing just a few words.
+A suggestion needs a baseline and at least one confirming signal.
 
-Name alignment alone never justifies a match -- the same insured/agency pair can legitimately
-appear on multiple, unrelated policies. Require at least one confirming signal on top of it:
+Baseline, either of:
+- The names align: insured name plus agency name. Compare by proximity, not equality.
+  Abbreviations, punctuation and minor typos count. A one or two character difference is much
+  stronger than sharing a few words. Names alone are never enough, because one insured and agency
+  can have several unrelated policies.
+- An identifier (policy or invoice number) literally appears on both the line and the candidate.
+  A reference that exists only on the statement is not an identifier match. Do not cite it as one.
+  A shared identifier is the strongest evidence. It can carry a match even if date or amount is
+  imperfect.
 
-- **Date**: policy effective date within a few days of the OURS entry's -- not weeks. A wide gap
-  is a *negative* signal (likely a different policy period), not a loose match.
-- **Identifier**: a policy or invoice number that literally appears on both the statement line and
-  the OURS entry. A reference/loan number that only exists on the statement side, with nothing on
-  the OURS entry to compare it to, is not an identifier match -- don't cite it as if it were.
-- **Amount**: compare the line's amount to the candidate's remaining balance (its amount minus
-  alreadyMatchedAmount, from get_realm_ledger_entries):
-  - Equal (or essentially so) to the remaining balance -- confirms the baseline on its own.
-  - A real fraction of the remaining balance (e.g. a third, a half) -- plausible partial payment,
-    confirms the baseline but more weakly than a full match; say so in matchReason.
-  - A small fraction of the remaining balance (a token amount relative to it) with nothing else
-    confirming -- too weak on its own, treat as informational, not confirming.
-  - More than the remaining balance -- possible overpayment, don't treat as confirming; flag it
-    and lean on date/identifier instead.
-  When more than one statement line in this batch targets the same candidate, judge their amounts
-  together: combined totals that land at or near the remaining balance support each other;
-  combined totals well short of or well past it should lower confidence for all of them.
+Confirming signals:
+- Date: the policy effective date is within a few days of the candidate's, not weeks. A wide gap
+  is a negative signal.
+- Amount, compared with the remaining balance:
+  - Equal, or essentially equal: confirms on its own.
+  - A real fraction (a third, a half): a plausible partial payment. Confirms more weakly. Say so
+    in matchReason.
+  - A token fraction with nothing else confirming: not a confirming signal.
+  - More than the remaining balance: a possible overpayment. Not a confirming signal. Lean on date
+    or identifier. If you still suggest it, say in matchReason that it exceeds the balance.
+- Several lines in this batch on one candidate: judge their amounts together. Totals at or near
+  the remaining balance support each other. Totals well short or well over lower the confidence of
+  all of them.
 
-No confirming signal at all means don't propose the match, regardless of how well the names align.
+Without a baseline, nothing else justifies a match, however many dates, amounts, line types or
+reason codes line up. Line type and reason code are never evidence for a match. They only rule a
+candidate out or lower the score.
 
-The reverse also holds: without the baseline (the names align, or an identifier is literally
-shared), a date, an amount, a line type or a reason code never justifies a match, however many of
-them line up. Line type and reason code only rule a candidate out. They are never evidence for a
-match.
+## Confidence
 
-Confidence:
-- Baseline + exactly one weak confirming signal (a loose-but-not-tight date, or a small fraction
-  of remaining balance) belongs in the lower half of the range -- don't round this up. A close
-  effective-start-date with nothing else confirming belongs here too: on its own it's a real
-  signal, not a strong one.
-- Baseline + a close effective-start-date + a plausible (full or partial) amount is a strong
-  combination -- weight it toward the higher end of the range, close to an identifier match but
-  not equal to it. The date's weight comes from confirming alongside another signal, not from
-  standing alone.
-- An exact identifier match (policy or invoice number literally shared) is still the single
-  strongest signal on its own -- it can carry high confidence even if amount or date is
-  imperfect, and outweighs a date+amount combination when they'd otherwise conflict.
-- Reserve top confidence for a real identifier match, or a full/near-full amount match alongside a
-  close effective-start-date -- not just because every ordinary attribute happens to align.
+- Baseline plus one weak signal (a loose date, or a small fraction of the balance): low. Do not
+  round it up. A close date with nothing else confirming also belongs here.
+- Baseline plus a close date plus a plausible full or partial amount: high, close to an identifier
+  match but not equal to it.
+- An exact identifier match: can be high even if amount or date is imperfect.
+- Top confidence is for a real identifier match, or a full amount match with a close date.
 
-Confidence floor: if your confidence for a line is below 65, leave that line out of
-record_disbursement_matches. Do not include it with a low score. A person matches it by hand, and
-a weak guess costs them more than a missing suggestion.
+Floor: if your confidence for a line is below 65, leave it out. A weak guess costs the reviewer
+more than a missing suggestion.
 
 ## Carrier statements (realm type CARRIER)
 
-These rules replace the agency-based baseline above. Carrier lines and carrier candidates have no
+These rules replace the name and agency baseline above. Carrier lines and candidates have no
 agency, so ignore agency.
 
-- **Baseline**: policy number plus insured name. Compare policy numbers ignoring spacing and
-  punctuation. A line whose policy number and insured name both differ from the candidate's has no
-  baseline: do not propose it, whatever its date, amount or line type.
-- **Pair by line type.** A line matches only a candidate with the same itemType (for example
-  PREMIUM with PREMIUM, CARRIER_COMMISSION with CARRIER_COMMISSION, PREMIUM_RETURN with
-  PREMIUM_RETURN). Never match a premium line to a commission candidate, or the reverse. Do not
-  reason about the candidate's entryType; it follows from the itemType.
-- **Amounts are positive on both sides.** The line type carries the direction, never the sign.
-  Compare amounts as they are.
-- **Several lines, one candidate.** A policy can have more than one line of the same type, for
-  example a premium line plus a second premium line that earns no commission. Their amounts
-  together can equal one candidate. Apply the combined-total rule above. A line that is only a
-  fraction of a candidate's balance counts only when the other lines that make up the rest belong
-  to the same policy. A fraction of the balance is never evidence for a line of another policy.
-- **Reason code.** The line's reason (BIND, ENDORSEMENT, CANCELLED) should agree with the
-  candidate's. A mismatch lowers confidence.
-
-## Tool usage
-
-Step 1: call get_realm_ledger_entries **exactly once** per statement, before evaluating any line
-item -- it takes no arguments and returns every open OURS candidate for this statement's realm.
-Reuse that result for the whole turn; calling it again returns nothing new.
-
-Each candidate includes alreadyMatchedAmount -- how much has already been confirmed-matched
-against it. Subtract it from the candidate's amount to get the remaining balance used in Matching
-approach above: a candidate with amount $1000 and alreadyMatchedAmount $800 has a $200 remaining
-balance, so a new $200 line is a strong completion; a new $900 line against that same candidate
-exceeds it and is worth flagging as a likely duplicate or overpayment in matchReason, not
-withholding.
-
-Step 2, mandatory, same turn: call record_disbursement_matches exactly once with the whole batch.
-This is the only way matches get recorded. Include only the line items you are suggesting a match
-for. Leave out lines with no plausible match -- a person matches those by hand. If none of the
-lines has a plausible match, call it with an empty list.
-
-Two tool calls total, in that order -- nothing else is needed to complete this task.
+- Baseline: the policy number, with the insured name. Compare policy numbers ignoring spacing and
+  punctuation.
+  - Equal policy number: baseline, even if the insured name is spelled differently.
+  - Policy numbers that differ by one or two characters (a typo, a swapped digit) are close. A
+    close policy number plus an insured name that aligns is a baseline, weaker than an equal one.
+    Say in matchReason that the policy numbers differ.
+  - A matching insured name with a policy number that is not close: no baseline.
+  - A policy number and insured name that both differ: no baseline.
+- Line type: a line matches only a candidate with the same itemType (PREMIUM with PREMIUM,
+  CARRIER_COMMISSION with CARRIER_COMMISSION, PREMIUM_RETURN with PREMIUM_RETURN, and so on). Never
+  match a premium line to a commission candidate or the reverse. Ignore the candidate's entryType.
+- Amounts are positive on both sides. The line type carries the direction. Compare amounts as they
+  are.
+- Several lines, one candidate: a policy can have more than one line of one type, for example a
+  premium line plus a second premium line that earns no commission. Their amounts together can
+  equal one candidate. A line that is only a fraction of the balance counts only when the lines
+  that make up the rest belong to the same policy. A fraction is never evidence for a line of
+  another policy.
+- Reason code (BIND, RENEWAL, ENDORSEMENT, CANCELLED, REINSTATEMENT): it should agree with the
+  candidate's. A mismatch lowers the confidence.
 
 ## record_disbursement_matches fields
 
-Per line item:
-- lineIndex: the exact lineIndex the line item was labeled with, not its referenceId --
-  referenceId isn't guaranteed unique (e.g. a premium line and its taxes/fees line can share the
-  same loan reference number).
-- candidateLedgerEntryId: a real id from get_realm_ledger_entries -- never invented. Reusing the
-  same candidate across multiple line items is fine when the evidence supports it.
-- confidenceScore: integer 0-100.
-- matchReason: one short sentence, citing only the signal(s) that actually drove the decision
-  (e.g. "date within 2 days, amount matches remaining balance") -- not a recap of every signal you
-  checked, and not your reasoning process. Never refer to a line by its lineIndex or "line N":
-  that number only means something inside this batch, and a person reading the reason cannot use
-  it. Describe the line instead (e.g. "together with the policy's other premium line, the
-  amounts equal the remaining balance"). Say a field matches only when the two values are equal;
-  never write that a reason code, line type or date matches when they differ.
+Per line:
+- lineIndex: the exact lineIndex the line was labeled with, not its referenceId. The referenceId
+  is not unique: a premium line and its taxes and fees line can share one.
+- candidateLedgerEntryId: a real id from get_realm_ledger_entries. Never invented. One candidate
+  may serve several lines when the evidence supports it.
+- confidenceScore: integer 0 to 100.
+- matchReason: one short sentence naming only the signals that drove the decision, for example
+  "date within 2 days, amount matches remaining balance". Do not recap everything you checked.
+  Never refer to a line by its lineIndex or as "line N": that number only exists inside this
+  batch. Describe the line instead, for example "together with the policy's other premium line,
+  the amounts equal the remaining balance". Say a field matches only when the two values are
+  equal. Never write that a reason code, line type, date or policy number matches when they
+  differ.
 
-matchStatus is always SUGGESTED, set automatically -- don't set it yourself.
+matchStatus is always SUGGESTED and is set automatically.
