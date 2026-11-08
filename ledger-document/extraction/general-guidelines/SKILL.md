@@ -6,13 +6,6 @@ description: >
   also matches the document.
 ---
 
-## A placeholder is not a value
-
-A statement may print a placeholder where a value belongs, for example "PENDING", "TBD", "N/A" or
-a row of dashes. Return that field empty. Never return the placeholder as if it were the value.
-Matching compares what you return with the ledger, and a placeholder would be taken for a real
-policy number, name or date.
-
 ## Combining split premium/taxes rows
 
 Some statements report one policy's premium and its taxes/fees as two separate rows under the
@@ -51,12 +44,9 @@ them apart. Return one line item per part, not one per printed row:
 - `amount`: signed. The vendor-specific skill says how each part is signed.
 - `dueDate`: the date of the statement column the line was printed under, as ISO-8601.
 
-Extract only the lines payable on this statement. A line that is printed only under a column for
-a later statement (for example a "future due" column) should not be returned.
-
-- `dueOnThisStatement`: set it to `false` on any line you return that is not payable on this
-  statement. A line marked `false` is discarded afterwards, so when a line is not clearly payable
-  now, mark it `false` rather than leaving it empty. Leave it empty on a line that is payable now.
+- `dueOnThisStatement`: leave it empty unless the vendor-specific skill says otherwise. A line
+  marked `false` is discarded afterwards. Which lines are not payable on this statement depends on
+  the carrier's layout, so the vendor-specific skill says which they are and what to do with them.
 
 Subtotal and total rows are not line items: do not return them, use them to check your own
 extraction.
@@ -67,7 +57,7 @@ Statement-level figures for a carrier statement:
 - `declaredTotal`: the printed total of the amount payable now (not a total of every column).
 - `declaredTotalNotDue`: leave empty.
 
-As above, these are printed numbers. Never add them up yourself.
+All of these are numbers printed on the statement. Never add up line items to produce one.
 
 ## A part of a larger document
 
