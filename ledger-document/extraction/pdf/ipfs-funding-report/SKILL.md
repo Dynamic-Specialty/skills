@@ -8,7 +8,8 @@ description: >
 
 The amount actually funded to Dynamic is the "Amt Financed" value — not "Policy Prem" or
 "Fees, Taxes," which describe the underlying policy, not what was paid. "Policy Number" is
-frequently blank ("PENDING"); use the "Account Number" column as the line reference instead.
+frequently blank or reads "PENDING". When it does, return no policy number; never return
+"PENDING". Use the "Account Number" column as the line reference instead.
 Report totals appear at the bottom as "Bank Total" / "Funding Total" / "Payee Total" /
 "Branch Total" / "Grand Total" — these are the same figure repeated, and should equal the sum of
 the "Amt Financed" column.

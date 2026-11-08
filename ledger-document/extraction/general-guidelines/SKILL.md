@@ -6,6 +6,13 @@ description: >
   also matches the document.
 ---
 
+## A placeholder is not a value
+
+A statement may print a placeholder where a value belongs, for example "PENDING", "TBD", "N/A" or
+a row of dashes. Return that field empty. Never return the placeholder as if it were the value.
+Matching compares what you return with the ledger, and a placeholder would be taken for a real
+policy number, name or date.
+
 ## Combining split premium/taxes rows
 
 Some statements report one policy's premium and its taxes/fees as two separate rows under the
