@@ -1,9 +1,8 @@
 ---
 name: ledger-reconciliation-matching
 description: >
-  Use when proposing a match between an extracted statement line item and an existing, open OURS
-  LedgerEntry on the same realm -- before entries are committed and reconciliation links are
-  created.
+  Use when proposing a match between a saved statement line item and an existing, open OURS
+  LedgerEntry on the same realm, before a person accepts or rejects the suggestion.
 ---
 
 Match each confirmed line item against a real, open OURS LedgerEntry for the same realm.
@@ -64,6 +63,25 @@ Confidence:
 - Reserve top confidence for a real identifier match, or a full/near-full amount match alongside a
   close effective-start-date -- not just because every ordinary attribute happens to align.
 
+## Carrier statements (realm type CARRIER)
+
+These rules replace the agency-based baseline above. Carrier lines and carrier candidates have no
+agency, so ignore agency.
+
+- **Baseline**: policy number plus insured name. Compare policy numbers ignoring spacing and
+  punctuation.
+- **Pair by line type.** A PREMIUM or PREMIUM_RETURN line matches only a PAYABLE candidate of the
+  same itemType. A CARRIER_COMMISSION or CARRIER_COMMISSION_RETURN line matches only a RECEIVABLE
+  candidate of the same itemType. Never match a premium line to a commission candidate, or the
+  reverse.
+- **Signs differ.** The statement may show a commission with the opposite sign from the candidate.
+  Compare amounts by absolute value.
+- **Several lines, one candidate.** A policy can have more than one line of the same type, for
+  example a premium line plus a second premium line that earns no commission. Their amounts
+  together can equal one candidate. Apply the combined-total rule above.
+- **Reason code.** The line's reason (BIND, ENDORSEMENT, CANCELLED) should agree with the
+  candidate's. A mismatch lowers confidence.
+
 ## Tool usage
 
 Step 1: call get_realm_ledger_entries **exactly once** per statement, before evaluating any line
@@ -78,8 +96,9 @@ exceeds it and is worth flagging as a likely duplicate or overpayment in matchRe
 withholding.
 
 Step 2, mandatory, same turn: call record_disbursement_matches exactly once with the whole batch.
-This is the only way matches get recorded. Include every confirmed line item, even ones with no
-match (null candidateLedgerEntryId), not just the ones you're confident about.
+This is the only way matches get recorded. Include only the line items you are suggesting a match
+for. Leave out lines with no plausible match -- a person matches those by hand. If none of the
+lines has a plausible match, call it with an empty list.
 
 Two tool calls total, in that order -- nothing else is needed to complete this task.
 
@@ -89,13 +108,11 @@ Per line item:
 - lineIndex: the exact lineIndex the line item was labeled with, not its referenceId --
   referenceId isn't guaranteed unique (e.g. a premium line and its taxes/fees line can share the
   same loan reference number).
-- candidateLedgerEntryId: a real id from get_realm_ledger_entries, or null if nothing plausible --
-  never invented. Reusing the same candidate across multiple line items is fine when the evidence
-  supports it.
+- candidateLedgerEntryId: a real id from get_realm_ledger_entries -- never invented. Reusing the
+  same candidate across multiple line items is fine when the evidence supports it.
 - confidenceScore: integer 0-100.
 - matchReason: one short sentence, citing only the signal(s) that actually drove the decision
-  (e.g. "date within 2 days, amount matches remaining balance" or "no candidate within a
-  plausible date range") -- not a recap of every signal you checked, and not your reasoning
-  process.
+  (e.g. "date within 2 days, amount matches remaining balance") -- not a recap of every signal you
+  checked, and not your reasoning process.
 
 matchStatus is always SUGGESTED, set automatically -- don't set it yourself.
