@@ -48,6 +48,11 @@ appear on multiple, unrelated policies. Require at least one confirming signal o
 
 No confirming signal at all means don't propose the match, regardless of how well the names align.
 
+The reverse also holds: without the baseline (the names align, or an identifier is literally
+shared), a date, an amount, a line type or a reason code never justifies a match, however many of
+them line up. Line type and reason code only rule a candidate out. They are never evidence for a
+match.
+
 Confidence:
 - Baseline + exactly one weak confirming signal (a loose-but-not-tight date, or a small fraction
   of remaining balance) belongs in the lower half of the range -- don't round this up. A close
@@ -73,7 +78,8 @@ These rules replace the agency-based baseline above. Carrier lines and carrier c
 agency, so ignore agency.
 
 - **Baseline**: policy number plus insured name. Compare policy numbers ignoring spacing and
-  punctuation.
+  punctuation. A line whose policy number and insured name both differ from the candidate's has no
+  baseline: do not propose it, whatever its date, amount or line type.
 - **Pair by line type.** A line matches only a candidate with the same itemType (for example
   PREMIUM with PREMIUM, CARRIER_COMMISSION with CARRIER_COMMISSION, PREMIUM_RETURN with
   PREMIUM_RETURN). Never match a premium line to a commission candidate, or the reverse. Do not
@@ -82,7 +88,9 @@ agency, so ignore agency.
   Compare amounts as they are.
 - **Several lines, one candidate.** A policy can have more than one line of the same type, for
   example a premium line plus a second premium line that earns no commission. Their amounts
-  together can equal one candidate. Apply the combined-total rule above.
+  together can equal one candidate. Apply the combined-total rule above. A line that is only a
+  fraction of a candidate's balance counts only when the other lines that make up the rest belong
+  to the same policy. A fraction of the balance is never evidence for a line of another policy.
 - **Reason code.** The line's reason (BIND, ENDORSEMENT, CANCELLED) should agree with the
   candidate's. A mismatch lowers confidence.
 
@@ -120,6 +128,7 @@ Per line item:
   checked, and not your reasoning process. Never refer to a line by its lineIndex or "line N":
   that number only means something inside this batch, and a person reading the reason cannot use
   it. Describe the line instead (e.g. "together with the policy's other premium line, the
-  amounts equal the remaining balance").
+  amounts equal the remaining balance"). Say a field matches only when the two values are equal;
+  never write that a reason code, line type or date matches when they differ.
 
 matchStatus is always SUGGESTED, set automatically -- don't set it yourself.
