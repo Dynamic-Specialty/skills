@@ -55,12 +55,11 @@ past due, current due, future due, comments.
   `futureDue`, exactly as printed. Then decide from them.
 - Extract the row only if `pastDue` or `currentDue` is not 0.00. Its lines get `dueDate` from the
   "current due" heading.
-- If only `futureDue` is not 0.00, the row is due on a later statement. Do not return it: it is
-  not extracted, and it counts for nothing on this statement.
-- Every line you return that is payable now has a `dueDate`. If a row's lines would have none, the
-  row is due later: do not return it, or if you did, set `dueOnThisStatement` to `false` on each of
-  its lines.
-- A "Payment" row is the exception to the three rules above. Its three due amounts all show 0.00,
+- If only `futureDue` is not 0.00, the row is due on a later statement. Do not return it: it
+  counts for nothing on this statement. If you do return a line that is not payable now, set
+  `dueOnThisStatement` to `false` on it. Such a line is discarded afterwards. When a row is not
+  clearly payable now, treat it as due later.
+- A "Payment" row is the exception to the two rules above. Its three due amounts all show 0.00,
   because the payment is already counted in the current due figure of its policy. Always return it:
   one line with the printed amount, `dueDate` from the "current due" heading, and
   `dueOnThisStatement` empty. Never set it to `false`.
