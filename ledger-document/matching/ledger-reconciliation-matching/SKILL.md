@@ -70,12 +70,12 @@ agency, so ignore agency.
 
 - **Baseline**: policy number plus insured name. Compare policy numbers ignoring spacing and
   punctuation.
-- **Pair by line type.** A PREMIUM or PREMIUM_RETURN line matches only a PAYABLE candidate of the
-  same itemType. A CARRIER_COMMISSION or CARRIER_COMMISSION_RETURN line matches only a RECEIVABLE
-  candidate of the same itemType. Never match a premium line to a commission candidate, or the
-  reverse.
-- **Signs differ.** The statement may show a commission with the opposite sign from the candidate.
-  Compare amounts by absolute value.
+- **Pair by line type.** A line matches only a candidate with the same itemType (for example
+  PREMIUM with PREMIUM, CARRIER_COMMISSION with CARRIER_COMMISSION, PREMIUM_RETURN with
+  PREMIUM_RETURN). Never match a premium line to a commission candidate, or the reverse. Do not
+  reason about the candidate's entryType; it follows from the itemType.
+- **Amounts are positive on both sides.** The line type carries the direction, never the sign.
+  Compare amounts as they are.
 - **Several lines, one candidate.** A policy can have more than one line of the same type, for
   example a premium line plus a second premium line that earns no commission. Their amounts
   together can equal one candidate. Apply the combined-total rule above.
