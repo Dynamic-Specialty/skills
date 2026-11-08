@@ -113,6 +113,9 @@ Per line item:
 - confidenceScore: integer 0-100.
 - matchReason: one short sentence, citing only the signal(s) that actually drove the decision
   (e.g. "date within 2 days, amount matches remaining balance") -- not a recap of every signal you
-  checked, and not your reasoning process.
+  checked, and not your reasoning process. Never refer to a line by its lineIndex or "line N":
+  that number only means something inside this batch, and a person reading the reason cannot use
+  it. Describe the line instead (e.g. "together with the policy's other premium line, the
+  amounts equal the remaining balance").
 
 matchStatus is always SUGGESTED, set automatically -- don't set it yourself.
