@@ -33,10 +33,10 @@ past due, current due, future due, comments.
 
 - Premium line: `amount` is the gross premium as printed. `itemType` is `PREMIUM`, or
   `PREMIUM_RETURN` when the gross premium is negative.
-- Commission line, only when comm % is above 0: `amount` is net premium minus gross premium, taken
-  from the printed numbers (normally a negative number), so that the two lines add up to the net
-  premium. `itemType` is `CARRIER_COMMISSION`, or `CARRIER_COMMISSION_RETURN` when the gross
-  premium is negative.
+- Commission line, only when comm % is above 0: `amount` is the gross premium times comm %, with the
+  opposite sign. `itemType` is `CARRIER_COMMISSION` when that amount is negative, or
+  `CARRIER_COMMISSION_RETURN` when it is positive. Example: gross 696.00 at 20% gives -139.20.
+  Gross -545.00 at 20% gives 109.00.
 - A row with 0% commission is premium on which no commission is paid. It gets a premium line only.
   This statement shows no fee on its own, so never return a fee line.
 - `reasonCode`: New Business is `BIND`, Endorsement is `ENDORSEMENT`, Cancellation is `CANCELLED`.
