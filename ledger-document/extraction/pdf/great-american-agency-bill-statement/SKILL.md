@@ -46,19 +46,20 @@ past due, current due, future due, comments.
   "Premium Mismatch" or "Late Entered") into `sourceFields`.
 - `policyEffectiveDate` is the "pol eff date" of the policy.
 
-## Which rows to extract
+## Which rows are payable now
 
 - In the page text, the last three dollar amounts of a row are, in this order: past due pay on
   receipt, current due, future due. The amount before them is the net premium. The net premium is
   repeated in exactly one of the three, and the other two show 0.00.
 - For every row, first copy those three amounts into `sourceFields` as `pastDue`, `currentDue` and
   `futureDue`, exactly as printed. Then decide from them.
-- Extract the row only if `pastDue` or `currentDue` is not 0.00. Its lines get `dueDate` from the
-  "current due" heading.
-- If only `futureDue` is not 0.00, the row is due on a later statement. Do not return it: it
-  counts for nothing on this statement. If you do return a line that is not payable now, set
-  `dueOnThisStatement` to `false` on it. Such a line is discarded afterwards. When a row is not
-  clearly payable now, treat it as due later.
+- Return every transaction row printed on the page, whether or not it is payable now. Do not
+  decide which rows to keep: copy the three due amounts, then set `dueOnThisStatement` from them.
+- If `pastDue` or `currentDue` is not 0.00, the row is payable now: set `dueOnThisStatement` to
+  `true`. Its lines get `dueDate` from the "current due" heading.
+- If `pastDue` and `currentDue` are both 0.00, the row is due on a later statement: set
+  `dueOnThisStatement` to `false` on every line of the row. Such a line is discarded afterwards.
+  The test is only these two numbers. Do not weigh anything else.
 - A "Payment" row is the exception to the two rules above. Its three due amounts all show 0.00,
   because the payment is already counted in the current due figure of its policy. Always return it:
   one line with the printed amount, `dueDate` from the "current due" heading, and
@@ -73,8 +74,8 @@ with amount -534.20.
 Examples, from the page text (gross, comm %, net, then the three due amounts):
 
 - `$ 696.00 20.00 $ 556.80 $ 0.00 $ 556.80 $ 0.00` has `currentDue` 556.80. Extract it.
-- `$ (1,553.00) 20.00 $ (1,242.40) $ 0.00 $ 0.00 $ (1,242.40)` has only `futureDue`. Do not
-  return it.
+- `$ (1,553.00) 20.00 $ (1,242.40) $ 0.00 $ 0.00 $ (1,242.40)` has only `futureDue`. Return its
+  lines with `dueOnThisStatement` `false`.
 
 ## Statement-level figures
 
@@ -82,4 +83,4 @@ Examples, from the page text (gross, comm %, net, then the three due amounts):
 - `dueDate`: the date in the "current due" column heading.
 - `declaredTotal`: the "current due" figure on the "STATEMENT TOTAL" row.
 - `declaredTotalNotDue`: leave empty.
-- The `amount` of all lines returned should add up to `declaredTotal`.
+- The `amount` of the lines with `dueOnThisStatement` not `false` should add up to `declaredTotal`.
