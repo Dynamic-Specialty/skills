@@ -10,6 +10,8 @@ description: >
 This is a carrier statement. The general guidelines for carrier statements apply. This skill says
 how this layout maps onto them.
 
+**Provisional:** the treatment of a "Payment" row below is awaiting confirmation from accounting.
+
 ## Layout
 
 - One block per policy: its transaction rows, then a "POLICY TOTAL" row. The last page ends with a

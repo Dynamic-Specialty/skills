@@ -41,9 +41,10 @@ them apart. Return one line item per part, not one per printed row:
 - `reasonCode`: one of `BIND`, `RENEWAL`, `ENDORSEMENT`, `CANCELLED`, `REINSTATEMENT`, from the
   carrier's transaction type. The vendor-specific skill gives the mapping. Leave it empty if there
   is none.
-- `amount`: the size of the figure, without a sign. The `itemType` carries the direction, and the
-  total is worked out from it afterwards. A line with no `itemType` keeps the sign it is printed
-  with. The vendor-specific skill says which figure each part is.
+- `amount`: for a line with an `itemType`, the size of the figure, without a sign: the `itemType`
+  carries the direction, and the total is worked out from it afterwards. A line with no
+  `itemType` is copied exactly as printed, with its sign. The vendor-specific skill says which
+  figure each part is.
 - `dueDate`: the date of the statement column the line was printed under, as ISO-8601.
 - `dueOnThisStatement`: leave it empty unless the vendor-specific skill says otherwise. A line
   marked `false` is discarded afterwards. The vendor-specific skill says which lines those are.
