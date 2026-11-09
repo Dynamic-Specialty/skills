@@ -10,72 +10,61 @@ description: >
 This is a carrier statement. The general guidelines for carrier statements apply. This skill says
 how this layout maps onto them.
 
-**Provisional:** the commission sign rule and the treatment of a "Payment" row below are awaiting
-confirmation from accounting.
-
 ## Layout
 
-- One block per policy. The policy column reads like "IMP F431009 00-00". Extract it as printed
-  into `policyNumber`. Which part of it is the matching key is not decided yet.
-- Each block has one or more transaction rows, then a "POLICY TOTAL" row. The last page ends with
-  a "STATEMENT TOTAL" row.
-- A policy can run across a page break. A row at the top of a page with no policy or insured
-  belongs to the policy at the end of the previous page.
-- The same policy can have several transactions in one statement, for example two endorsements in
-  the same month. Each printed row is its own transaction.
-- Do not return "POLICY TOTAL" or "STATEMENT TOTAL" rows as line items.
-- The carrier is Great American Insurance: set `carrierName` to that. Leave `agencyName` empty.
+- One block per policy: its transaction rows, then a "POLICY TOTAL" row. The last page ends with a
+  "STATEMENT TOTAL" row. Never return either total row as a line.
+- The policy column reads like "IMP F431009 00-00". Return it as printed in `policyNumber`.
+- A row at the top of a page with no policy or insured belongs to the policy at the end of the
+  previous page.
+- Each printed row is its own transaction, even when one policy has several in the same month.
+- `carrierName` is Great American Insurance. Leave `agencyName` empty.
 
-## One printed row becomes up to two line items
+Printed columns: trans type, trans date (month and year), gross premium, comm %, net premium, past
+due pay on receipt, current due, future due, comments. In the page text, the last three amounts of
+a row are past due, current due and future due.
 
-Printed columns: trans type, trans date (month and year only), gross premium, comm %, net premium,
-past due, current due, future due, comments.
+## Lines from a row
 
-- Premium line: `amount` is the gross premium as printed. `itemType` is `PREMIUM`, or
-  `PREMIUM_RETURN` when the gross premium is negative.
-- Commission line, only when comm % is above 0: `amount` is the gross premium times comm %, with the
-  opposite sign. `itemType` is `CARRIER_COMMISSION` when that amount is negative, or
-  `CARRIER_COMMISSION_RETURN` when it is positive. Example: gross 696.00 at 20% gives -139.20.
-  Gross -545.00 at 20% gives 109.00.
-- A row with 0% commission is premium on which no commission is paid. It gets a premium line only.
-  This statement shows no fee on its own, so never return a fee line.
+Return every transaction row, whether or not it is payable now. A row gives:
+
+- A premium line: `amount` is the gross premium. `itemType` is `PREMIUM`, or `PREMIUM_RETURN` when
+  the gross premium is negative.
+- A commission line, only when comm % is above 0: `amount` is the gross premium times comm %.
+  `itemType` is `CARRIER_COMMISSION`, or `CARRIER_COMMISSION_RETURN` when the gross premium is
+  negative.
+
+A row with 0% commission gets a premium line only. This statement has no fees, so never return a
+fee line. Give amounts without a sign: the `itemType` carries the direction.
+
+On every line:
+
 - `reasonCode`: New Business is `BIND`, Endorsement is `ENDORSEMENT`, Cancellation is `CANCELLED`.
-  A "Payment" row has no reason code: return one premium-kind line with `itemType` empty, the
-  printed amount, and `Payment` in `sourceFields`.
-- Put `transType`, `transDate`, `commPercent`, `netPremium` and any `comments` text (for example
-  "Premium Mismatch" or "Late Entered") into `sourceFields`.
-- `policyEffectiveDate` is the "pol eff date" of the policy.
+- `policyEffectiveDate`: the "pol eff date" of the policy.
+- `sourceFields`: `transType`, `transDate`, `commPercent`, `netPremium`, the `comments` text (for
+  example "Premium Mismatch"), and the three due amounts as printed: `pastDue`, `currentDue`,
+  `futureDue`.
 
-## Which rows are payable now
+## Payable now
 
-- In the page text, the last three dollar amounts of a row are, in this order: past due pay on
-  receipt, current due, future due. The amount before them is the net premium. The net premium is
-  repeated in exactly one of the three, and the other two show 0.00.
-- For every row, first copy those three amounts into `sourceFields` as `pastDue`, `currentDue` and
-  `futureDue`, exactly as printed. Then decide from them.
-- Return every transaction row printed on the page, whether or not it is payable now. Do not
-  decide which rows to keep: copy the three due amounts, then set `dueOnThisStatement` from them.
-- If `pastDue` or `currentDue` is not 0.00, the row is payable now: set `dueOnThisStatement` to
-  `true`. Its lines get `dueDate` from the "current due" heading.
-- If `pastDue` and `currentDue` are both 0.00, the row is due on a later statement: set
-  `dueOnThisStatement` to `false` on every line of the row. Such a line is discarded afterwards.
-  The test is only these two numbers. Do not weigh anything else.
-- A "Payment" row is the exception to the two rules above. Its three due amounts all show 0.00,
-  because the payment is already counted in the current due figure of its policy. Always return it:
-  one line with the printed amount, `dueDate` from the "current due" heading, and
-  `dueOnThisStatement` empty. Never set it to `false`.
-- If the three columns do not add up to the net premium, extract the row as printed and say so in
+- If `pastDue` or `currentDue` is not 0.00, set `dueOnThisStatement` to `true` on every line of the
+  row. `dueDate` is the date in the "current due" heading.
+- If both are 0.00, set `dueOnThisStatement` to `false` on every line of the row. Such lines are
+  discarded afterwards. Nothing else decides this.
+- A "Payment" row is the exception. Its three due amounts show 0.00 because the payment is already
+  inside the current due of its policy. Always return it: one line with no `itemType`, the printed
+  amount with its printed sign, `dueDate` from the "current due" heading, and `dueOnThisStatement`
+  empty. Put `Payment` in `sourceFields`.
+- A row whose due amounts do not add up to its net premium is still returned. Say so in
   `sourceFields.comments`.
 
-Example of a Payment row, from the page text:
-`Payment 08/13/2026 $ (534.20) 0.00 $ (534.20) $ 0.00 $ 0.00 $ 0.00 Premium Mismatch`. Return it,
-with amount -534.20.
+Examples from the page text (gross, comm %, net, past due, current due, future due):
 
-Examples, from the page text (gross, comm %, net, then the three due amounts):
-
-- `$ 696.00 20.00 $ 556.80 $ 0.00 $ 556.80 $ 0.00` has `currentDue` 556.80. Extract it.
-- `$ (1,553.00) 20.00 $ (1,242.40) $ 0.00 $ 0.00 $ (1,242.40)` has only `futureDue`. Return its
+- `$ 696.00 20.00 $ 556.80 $ 0.00 $ 556.80 $ 0.00` is payable now.
+- `$ (1,553.00) 20.00 $ (1,242.40) $ 0.00 $ 0.00 $ (1,242.40)` has only a future due. Return its
   lines with `dueOnThisStatement` `false`.
+- `Payment 08/13/2026 $ (534.20) 0.00 $ (534.20) $ 0.00 $ 0.00 $ 0.00 Premium Mismatch` is a Payment
+  row. Return it with amount -534.20.
 
 ## Statement-level figures
 
@@ -83,4 +72,3 @@ Examples, from the page text (gross, comm %, net, then the three due amounts):
 - `dueDate`: the date in the "current due" column heading.
 - `declaredTotal`: the "current due" figure on the "STATEMENT TOTAL" row.
 - `declaredTotalNotDue`: leave empty.
-- The `amount` of the lines with `dueOnThisStatement` not `false` should add up to `declaredTotal`.

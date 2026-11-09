@@ -41,15 +41,14 @@ them apart. Return one line item per part, not one per printed row:
 - `reasonCode`: one of `BIND`, `RENEWAL`, `ENDORSEMENT`, `CANCELLED`, `REINSTATEMENT`, from the
   carrier's transaction type. The vendor-specific skill gives the mapping. Leave it empty if there
   is none.
-- `amount`: signed. The vendor-specific skill says how each part is signed.
+- `amount`: the size of the figure, without a sign. The `itemType` carries the direction, and the
+  total is worked out from it afterwards. A line with no `itemType` keeps the sign it is printed
+  with. The vendor-specific skill says which figure each part is.
 - `dueDate`: the date of the statement column the line was printed under, as ISO-8601.
-
 - `dueOnThisStatement`: leave it empty unless the vendor-specific skill says otherwise. A line
-  marked `false` is discarded afterwards. Which lines are not payable on this statement depends on
-  the carrier's layout, so the vendor-specific skill says which they are and what to do with them.
+  marked `false` is discarded afterwards. The vendor-specific skill says which lines those are.
 
-Subtotal and total rows are not line items: do not return them, use them to check your own
-extraction.
+Subtotal and total rows are not line items. Do not return them.
 
 Statement-level figures for a carrier statement:
 
@@ -57,7 +56,7 @@ Statement-level figures for a carrier statement:
 - `declaredTotal`: the printed total of the amount payable now (not a total of every column).
 - `declaredTotalNotDue`: leave empty.
 
-All of these are numbers printed on the statement. Never add up line items to produce one.
+These are numbers printed on the statement. Never add up line items to produce one.
 
 ## A part of a larger document
 
