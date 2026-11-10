@@ -59,8 +59,8 @@ On every line:
   - Cancellation Endorsement is `CANCELLED`.
   - Reinstatement Endorsement and Reinstatement Notice are `REINSTATEMENT`.
 - `policyEffectiveDate`: the "Pol Eff Date" of the row.
-- `sourceFields`: `transactionType`, `dateBound`, `transEffDate`, `policyExpDate`, `vehChange`, and
-  the row's printed `total`, `commission` and `balanceDue`.
+- `sourceFields`: only `transactionType` and `transEffDate`. Add nothing else. A long workbook
+  has about 150 lines, and a longer answer is cut off before it ends.
 
 A "Reinstatement Notice" row has only a ReinstateFee. It gives one `CARRIER_PAIDFEE` line and no
 commission. Its Trans Eff Date can be in the future. Return it anyway.
