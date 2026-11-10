@@ -65,7 +65,6 @@ commission. Its Trans Eff Date can be in the future. Return it anyway.
 
 ## As rules
 
-- Read sheet 1 only. Do not call `describe_sheet` or `read_rows` on any other sheet. About 5 tool calls are enough.
 - Record one table: sheet 1, from the first data row down to the row above the last row.
 - `fields`: `insuredName` from "Insured Name", `policyNumber` from "Policy No.", `policyEffectiveDate` from "Pol Eff Date".
 - One line rule for each column in the table above. Use `reason` with a `column` set to "Transaction Type" and a `byValue` map.

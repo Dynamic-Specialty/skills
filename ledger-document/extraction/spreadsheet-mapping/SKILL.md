@@ -10,16 +10,13 @@ Never write lines in your answer.
 
 ## Process
 
-1. Call `list_sheets`. It shows the first rows of every sheet. Call `describe_sheet` only for a sheet the carrier skill says counts, never for the others.
+1. Call `list_sheets`, then `describe_sheet` for each sheet the carrier skill says counts.
 2. Find the tables. A sheet can hold one table, or many stacked ones, each with its own title, header, rows and total.
    A header can repeat inside one table.
 3. Read the title and header rows with `read_rows`. Read a few data rows and the rows around any total.
 4. For each table, call `record_table`. Read the answer. If it does not tie to the printed total, find out why and call it again.
-   Call `record_table` at most 3 times for one table. If it still does not tie, keep the best version and say why.
 5. Call `record_declared_total` for the statement's own grand total, when the sheet prints one.
 6. When every table the carrier skill names is recorded and ties, stop. Say in one line what you recorded.
-
-You are limited to 20 tool calls in all. Do not read rows you do not need. Do not call a tool twice with the same arguments.
 
 ## What a table is
 
