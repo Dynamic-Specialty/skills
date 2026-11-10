@@ -21,6 +21,8 @@ Never write lines in your answer.
 
 You are limited to 20 tool calls in all. Do not read rows you do not need. Do not call a tool twice with the same arguments.
 
+`record_table` takes the rules as one JSON text, e.g. `{"name":"...","sheet":1,"firstRow":2,"lastRow":40,"fields":{...},"lines":[...]}`. Write it as valid JSON with no comments. `record_declared_total` takes `sheet`, `row` and `column`.
+
 ## What a table is
 
 A table is a run of data rows read with one set of rules. Choose `firstRow` and `lastRow` so that the title, the header, the total
