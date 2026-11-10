@@ -14,6 +14,8 @@ how this layout maps onto them.
 **Provisional:** the fee and tax split below, and the treatment of "Reinstatement Notice" rows, are
 awaiting confirmation from accounting.
 
+The rules below are applied by code from `mapping.json` in this folder. Keep the two in step.
+
 ## Which tab
 
 - The workbook holds one tab per month, newest first. The statement is the first tab only.

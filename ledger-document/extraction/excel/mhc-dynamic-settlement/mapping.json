@@ -1,0 +1,221 @@
+{
+  "name": "MHC Dynamic Settlement",
+  "identify": [
+    {
+      "sheet": 1,
+      "row": 1,
+      "column": "A",
+      "operator": "EQUALS",
+      "value": "Insured Name"
+    },
+    {
+      "sheet": 1,
+      "row": 1,
+      "column": "B",
+      "operator": "EQUALS",
+      "value": "Policy No."
+    },
+    {
+      "sheet": 1,
+      "row": 1,
+      "column": "G",
+      "operator": "EQUALS",
+      "value": "Transaction Type"
+    },
+    {
+      "sheet": 1,
+      "row": 1,
+      "column": "H",
+      "operator": "EQUALS",
+      "value": "Premium"
+    },
+    {
+      "sheet": 1,
+      "row": 1,
+      "column": "J",
+      "operator": "EQUALS",
+      "value": "MembershipFee"
+    },
+    {
+      "sheet": 1,
+      "row": 1,
+      "column": "Q",
+      "operator": "EQUALS",
+      "value": "Commission"
+    },
+    {
+      "sheet": 1,
+      "row": 1,
+      "column": "R",
+      "operator": "EQUALS",
+      "value": "Balance Due"
+    }
+  ],
+  "declaredTotal": {
+    "sheet": 1,
+    "at": {
+      "find": {
+        "column": "A",
+        "operator": "EMPTY"
+      }
+    },
+    "column": "R"
+  },
+  "tables": [
+    {
+      "name": "Settlement, first sheet",
+      "sheet": 1,
+      "start": {
+        "row": 2
+      },
+      "end": {
+        "find": {
+          "column": "A",
+          "operator": "EMPTY"
+        }
+      },
+      "fields": {
+        "insuredName": {
+          "column": "A"
+        },
+        "policyNumber": {
+          "column": "B"
+        },
+        "policyEffectiveDate": {
+          "column": "D"
+        }
+      },
+      "lines": [
+        {
+          "amountColumn": "H",
+          "itemType": "PREMIUM",
+          "returnItemType": "PREMIUM_RETURN",
+          "reason": {
+            "column": "G",
+            "byValue": {
+              "New Business": "BIND",
+              "Renewal": "RENEWAL",
+              "Endorsement/Change": "ENDORSEMENT",
+              "Cancellation Endorsement": "CANCELLED",
+              "Reinstatement Endorsement": "REINSTATEMENT",
+              "Reinstatement Notice": "REINSTATEMENT"
+            }
+          }
+        },
+        {
+          "amountColumn": "Q",
+          "itemType": "CARRIER_COMMISSION",
+          "returnItemType": "CARRIER_COMMISSION_RETURN",
+          "reason": {
+            "column": "G",
+            "byValue": {
+              "New Business": "BIND",
+              "Renewal": "RENEWAL",
+              "Endorsement/Change": "ENDORSEMENT",
+              "Cancellation Endorsement": "CANCELLED",
+              "Reinstatement Endorsement": "REINSTATEMENT",
+              "Reinstatement Notice": "REINSTATEMENT"
+            }
+          }
+        },
+        {
+          "amountColumn": "I",
+          "itemType": "CARRIER_FEE",
+          "returnItemType": "CARRIER_FEE_RETURN",
+          "reason": {
+            "column": "G",
+            "byValue": {
+              "New Business": "BIND",
+              "Renewal": "RENEWAL",
+              "Endorsement/Change": "ENDORSEMENT",
+              "Cancellation Endorsement": "CANCELLED",
+              "Reinstatement Endorsement": "REINSTATEMENT",
+              "Reinstatement Notice": "REINSTATEMENT"
+            }
+          }
+        },
+        {
+          "amountColumn": "L",
+          "itemType": "CARRIER_FEE",
+          "returnItemType": "CARRIER_FEE_RETURN",
+          "reason": {
+            "column": "G",
+            "byValue": {
+              "New Business": "BIND",
+              "Renewal": "RENEWAL",
+              "Endorsement/Change": "ENDORSEMENT",
+              "Cancellation Endorsement": "CANCELLED",
+              "Reinstatement Endorsement": "REINSTATEMENT",
+              "Reinstatement Notice": "REINSTATEMENT"
+            }
+          }
+        },
+        {
+          "amountColumn": "M",
+          "itemType": "CARRIER_FEE",
+          "returnItemType": "CARRIER_FEE_RETURN",
+          "reason": {
+            "column": "G",
+            "byValue": {
+              "New Business": "BIND",
+              "Renewal": "RENEWAL",
+              "Endorsement/Change": "ENDORSEMENT",
+              "Cancellation Endorsement": "CANCELLED",
+              "Reinstatement Endorsement": "REINSTATEMENT",
+              "Reinstatement Notice": "REINSTATEMENT"
+            }
+          }
+        },
+        {
+          "amountColumn": "K",
+          "itemType": "CARRIER_TAX",
+          "returnItemType": "CARRIER_TAX_RETURN",
+          "reason": {
+            "column": "G",
+            "byValue": {
+              "New Business": "BIND",
+              "Renewal": "RENEWAL",
+              "Endorsement/Change": "ENDORSEMENT",
+              "Cancellation Endorsement": "CANCELLED",
+              "Reinstatement Endorsement": "REINSTATEMENT",
+              "Reinstatement Notice": "REINSTATEMENT"
+            }
+          }
+        },
+        {
+          "amountColumn": "J",
+          "itemType": "CARRIER_PAIDFEE",
+          "returnItemType": "CARRIER_PAIDFEE_RETURN",
+          "reason": {
+            "column": "G",
+            "byValue": {
+              "New Business": "BIND",
+              "Renewal": "RENEWAL",
+              "Endorsement/Change": "ENDORSEMENT",
+              "Cancellation Endorsement": "CANCELLED",
+              "Reinstatement Endorsement": "REINSTATEMENT",
+              "Reinstatement Notice": "REINSTATEMENT"
+            }
+          }
+        },
+        {
+          "amountColumn": "N",
+          "itemType": "CARRIER_PAIDFEE",
+          "returnItemType": "CARRIER_PAIDFEE_RETURN",
+          "reason": {
+            "column": "G",
+            "byValue": {
+              "New Business": "BIND",
+              "Renewal": "RENEWAL",
+              "Endorsement/Change": "ENDORSEMENT",
+              "Cancellation Endorsement": "CANCELLED",
+              "Reinstatement Endorsement": "REINSTATEMENT",
+              "Reinstatement Notice": "REINSTATEMENT"
+            }
+          }
+        }
+      ],
+      "expectedTotalColumn": "R"
+    }
+  ]
+}
