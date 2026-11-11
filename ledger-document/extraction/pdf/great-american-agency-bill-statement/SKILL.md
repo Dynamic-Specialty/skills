@@ -34,7 +34,7 @@ Return every transaction row, whether or not it is payable now. A row gives:
   the gross premium is negative.
 - A commission line, only when comm % is above 0: `amount` is the gross premium times comm %.
   `itemType` is `CARRIER_COMMISSION`, or `CARRIER_COMMISSION_RETURN` when the gross premium is
-  negative.
+  negative. Set `derived` to true on this line: the statement prints no commission amount.
 
 A row with 0% commission gets a premium line only. This statement has no fees, so never return a
 fee line. Give amounts without a sign: the `itemType` carries the direction.
