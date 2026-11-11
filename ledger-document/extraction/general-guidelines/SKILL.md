@@ -45,6 +45,10 @@ them apart. Return one line item per part, not one per printed row:
   carries the direction, and the total is worked out from it afterwards. A line with no
   `itemType` is copied exactly as printed, with its sign. The vendor-specific skill says which
   figure each part is.
+- `derived`: true for a line you work out yourself from printed figures, for example a commission
+  figured from a gross premium and a percentage. Leave it empty for a figure the statement prints
+  as such, including a column printed as commission. The carrier does not know a derived line, so
+  the settlement report leaves it out.
 - `dueDate`: the date of the statement column the line was printed under, as ISO-8601.
 - `dueOnThisStatement`: leave it empty unless the vendor-specific skill says otherwise. A line
   marked `false` is discarded afterwards. The vendor-specific skill says which lines those are.
