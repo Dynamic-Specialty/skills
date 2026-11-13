@@ -1,0 +1,64 @@
+{
+  "name": "Palomar Motor Truck Cargo",
+  "identify": [
+    { "sheet": 1, "row": 1, "column": "A", "operator": "EQUALS", "value": "Agency Name" },
+    { "sheet": 1, "row": 1, "column": "B", "operator": "EQUALS", "value": "GL Line of Business" },
+    { "sheet": 1, "row": 1, "column": "C", "operator": "EQUALS", "value": "Policy Number" },
+    { "sheet": 1, "row": 1, "column": "D", "operator": "EQUALS", "value": "Insured Name" },
+    { "sheet": 1, "row": 1, "column": "H", "operator": "EQUALS", "value": "Gross Premium" },
+    { "sheet": 1, "row": 1, "column": "I", "operator": "EQUALS", "value": "Agency Commission" },
+    { "sheet": 1, "row": 1, "column": "J", "operator": "EQUALS", "value": "Policy Balance" }
+  ],
+  "declaredTotal": {
+    "sheet": 1,
+    "at": {
+      "find": {
+        "column": "A",
+        "operator": "EQUALS",
+        "value": "Beneficiary Name"
+      }
+    },
+    "column": "J"
+  },
+  "tables": [
+    {
+      "name": "Statement, first sheet",
+      "sheet": 1,
+      "start": {
+        "row": 2
+      },
+      "end": {
+        "find": {
+          "column": "A",
+          "operator": "EQUALS",
+          "value": "Beneficiary Name"
+        }
+      },
+      "fields": {
+        "insuredName": {
+          "column": "D"
+        },
+        "policyNumber": {
+          "column": "C"
+        },
+        "policyEffectiveDate": {
+          "column": "E"
+        }
+      },
+      "lines": [
+        {
+          "amountColumn": "H",
+          "itemType": "PREMIUM",
+          "returnItemType": "PREMIUM_RETURN"
+        },
+        {
+          "amountColumn": "I",
+          "itemType": "CARRIER_COMMISSION",
+          "returnItemType": "CARRIER_COMMISSION_RETURN",
+          "flipSign": true
+        }
+      ],
+      "expectedTotalColumn": "J"
+    }
+  ]
+}
